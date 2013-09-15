@@ -1,0 +1,121 @@
+S-expression syntax:
+	(1 2 3 a=4 b=5)
+	Keys must be primitive data structures.
+	Quoting is ignored for keys.
+		(''''a=b) means (a=b)
+	Table constructor syntax:
+		{a=b c=d} means `(a=,b c=,d)
+
+Functions:
+	All lisp functions take a table and return a table.
+	All functions take a single, table argument.
+	All functions return a single value.
+	Use the function "lua" to call other types of functions.
+		This function takes the array of values passes them to
+			another function that takes other types of arguments.
+		It takes all the values returned and yeilds them as an array.
+
+Everything is an expression.
+	The last value of every expression is implicitly returned.
+
+Lisp forms:
+	(exp exp ...)
+	(let (a=(read) b=(read)) (write a b))
+	(let (a=(read) b=(read)) (write a b))
+	(match ((pattern ...) exp) body ...)
+	(define var exp)
+	(define (fn pattern ...) body ...)
+	(quote exp)
+	(if exp ifexp elseexp)
+	(if exp then=exp else=exp)
+	(lambda (pattern ...) body ...)
+	(lambda name body ...)
+	(and exp ...)
+	(or exp ...)
+	(begin exp ...)
+
+Pattern-matching examples:
+	(match ((a b k=c) {1 2 k=3}) (write a b c))
+	(match (e {1 2 k=3}) (write e))
+	(define (hello a b k=c) (write a b c))
+	(hello 1 2 k=3)
+
+Library functions:
+	(lua fn args): Calls a function using the lua argument convention.
+	(write e): prints data using s-expression syntax.
+	(read e): parses data using s-expression syntax.
+	(get t k): (t[k])
+	(set t k v) (t[k]=v)
+	(mktable {k v} {k v} ...) builds a table.
+
+Other Concerns:
+	Implement tail call optimization using “return lastexp”
+	Implement a REPL that runs a lua interpreter and compiles code on-the-fly.
+
+<p>Moonlisp Notes
+<ul><li>S-expression syntax:</li>
+	<ul><li>(1 2 3 a=4 b=5)</li>
+	<li>Keys must be primitive data structures.</li>
+	<li>Quoting is ignored for keys.</li>
+		<ul><li>(''''a=b) means (a=b)</li>
+		</ul>
+	<li>Table constructor syntax:</li>
+		<ul><li>{a=b c=d} means `(a=,b c=,d)</li>
+		</ul>
+	</ul>
+
+<li>Functions:</li>
+	<ul><li>All lisp functions take a table and return a table.</li>
+	<li>All functions take a single, table argument.</li>
+	<li>All functions return a single value.</li>
+	<li>Use the function "lua" to call other types of functions.</li>
+		<ul><li>This function takes the array of values passes them to</li>
+			<ul><li>another function that takes other types of arguments.</li>
+			</ul>
+		<li>It takes all the values returned and yeilds them as an array.</li>
+		</ul>
+	</ul>
+
+<li>Everything is an expression.</li>
+	<ul><li>The last value of every expression is implicitly returned.</li>
+	</ul>
+
+<li>Lisp forms:</li>
+	<ul><li>(exp exp ...)</li>
+	<li>(let (a=(read) b=(read)) (write a b))</li>
+	<li>(let (a=(read) b=(read)) (write a b))</li>
+	<li>(match ((pattern ...) exp) body ...)</li>
+	<li>(define var exp)</li>
+	<li>(define (fn pattern ...) body ...)</li>
+	<li>(quote exp)</li>
+	<li>(if exp ifexp elseexp)</li>
+	<li>(if exp then=exp else=exp)</li>
+	<li>(lambda (pattern ...) body ...)</li>
+	<li>(lambda name body ...)</li>
+	<li>(and exp ...)</li>
+	<li>(or exp ...)</li>
+	<li>(begin exp ...)</li>
+	</ul>
+
+<li>Pattern-matching examples:</li>
+	<ul><li>(match ((a b k=c) {1 2 k=3}) (write a b c))</li>
+	<li>(match (e {1 2 k=3}) (write e))</li>
+	<li>(define (hello a b k=c) (write a b c))</li>
+	<li>(hello 1 2 k=3)</li>
+	</ul>
+
+<li>Library functions:</li>
+	<ul><li>(lua fn args): Calls a function using the lua argument convention.</li>
+	<li>(write e): prints data using s-expression syntax.</li>
+	<li>(read e): parses data using s-expression syntax.</li>
+	<li>(get t k): (t[k])</li>
+	<li>(set t k v) (t[k]=v)</li>
+	<li>(mktable {k v} {k v} ...) builds a table.</li>
+	</ul>
+
+<li>Other Concerns:</li>
+	<ul><li>Implement tail call optimization using “return lastexp”</li>
+	<li>Implement a REPL that runs a lua interpreter and compiles code on-the-fly.</li>
+	</ul>
+</ul>
+</p>
