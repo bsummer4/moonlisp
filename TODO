@@ -1,0 +1,23 @@
+Get Sexp Reading and Writing working nicely.
+Implement Sexp in ‘Lua.hs’.
+Get a working Lua repl using sexpression syntax
+	using the representation from Lua.hs
+
+Install node.js
+Write a ‘JS.hs’ mirroring ‘Lua.hs’
+Get a working Javascript repl using s-expression syntax.
+Write a ‘Python.hs’ mirroring ‘Lua.hs’
+Get a working Python repl using s-expression syntax.
+Rework the IR:
+	It should support all the features common to all backends with
+		minimal added niceness.
+
+Add s-expression support to the IR
+Write compilers from the IR to Python, Lua, and JS.
+Copy IR.hs to Moon.hs, and then start adding features.
+	Implicit returns.
+	Explicit stack objects.
+	Tail Call Optimization.
+	Table-based function calls.
+	String-based and function-based FFIs.
+	Pattern matching
