@@ -5,6 +5,7 @@
 module Lua where
 import Data.List
 import Ty
+import Sexp
 
 data Var = Var String | TVar Exp Exp deriving Show
 data FnCall = FnCall Exp [Exp] deriving Show

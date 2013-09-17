@@ -3,13 +3,16 @@
 module Sexp where
 import Data.List
 import Ty
+data Prim = T | F | NIL | STR String | NUM Double deriving (Eq,Show,Ord)
+data T = Prim Prim | Tbl [(T,T)] deriving (Eq,Show,Ord)
+(t,f,n) = (Prim T, Prim F, Prim NIL)
+class Sexp a where { sexp::a->T; unsexp::T->a }
+instance Sexp T where { sexp=id; unsexp=id }
 data OneOrTwo a = Two a a | One a
 data Tok = TSEP | TPrim Prim | TBEGIN | TEND deriving (Eq,Ord,Show)
 instance CodeGen T where cgen = write
-
 isInt n = n == ((fromIntegral $ truncate n) :: Double)
 writeNum n = if isInt n then show(truncate n) else show n
-
 arrayNotArray a = r 0 ([],[]) (sort a) where
 	r i (o,u) [] = (reverse o,reverse u)
 	r i (o,u) ((k,v):m) = if same k i then r (i+1) (v:o,u) m else r i (o,(k,v):u) m
