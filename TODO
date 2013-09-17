@@ -1,5 +1,4 @@
-Get Sexp Reading and Writing working nicely.
-Implement Sexp in ‘Lua.hs’.
+Implement the Sexp typeclass in ‘Lua.hs’.
 Get a working Lua repl using sexpression syntax
 	using the representation from Lua.hs
 
