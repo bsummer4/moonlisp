@@ -3,13 +3,13 @@
 module Sexp where
 import Data.List
 import Ty
-data Prim = T | F | NIL | STR String | NUM Double deriving (Eq,Show,Ord)
-data T = Prim Prim | Tbl [(T,T)] deriving (Eq,Show,Ord)
+data Prim = T | F | NIL | STR String | NUM Double deriving (Eq,Show,Read,Ord)
+data T = Prim Prim | Tbl [(T,T)] deriving (Eq,Show,Read,Ord)
 (t,f,n) = (Prim T, Prim F, Prim NIL)
 class Sexp a where { sexp::a->T; unsexp::T->a }
 instance Sexp T where { sexp=id; unsexp=id }
 data OneOrTwo a = Two a a | One a
-data Tok = TSEP | TPrim Prim | TBEGIN | TEND deriving (Eq,Ord,Show)
+data Tok = TSEP | TPrim Prim | TBEGIN | TEND deriving (Eq,Ord,Show,Read)
 instance CodeGen T where cgen = write
 isInt n = n == ((fromIntegral $ truncate n) :: Double)
 writeNum n = if isInt n then show(truncate n) else show n
@@ -107,4 +107,5 @@ streamProcess proc1 s = case proc1 s of
 tokenize = streamProcess tokenize1
 parse = streamProcess parse1
 read = parse . tokenize
+read1 x = case Sexp.read x of {[]->Prim NIL; (t:ts)->t}
 rpl = interact $ concat . map show . Sexp.read

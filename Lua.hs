@@ -6,11 +6,12 @@ module Lua where
 import Data.List
 import Ty
 import Sexp
+import System.IO
 
-data Var = Var String | TVar Exp Exp deriving Show
-data FnCall = FnCall Exp [Exp] deriving Show
-data Block = BLOCK [Stmt] (Maybe BlockEnd) deriving Show
-data BlockEnd = RETURN Exp | BREAK | CONTINUE deriving Show
+data Var = Var String | TVar Exp Exp deriving (Show,Read)
+data FnCall = FnCall Exp [Exp] deriving (Show,Read)
+data Block = BLOCK [Stmt] (Maybe BlockEnd) deriving (Show,Read)
+data BlockEnd = RETURN Exp | BREAK | CONTINUE deriving (Show,Read)
 data Exp
 	= LPrim Prim
 	| CALLEXP FnCall
@@ -18,7 +19,7 @@ data Exp
 	| Λ [String] Block
 	| DOT Exp Exp
 	| TABLE [(Exp,Exp)]
-	deriving Show
+	deriving (Show,Read)
 
 data Stmt
 	= DO Block
@@ -26,7 +27,7 @@ data Stmt
 	| LOCAL Var
 	| IF Exp Block Block
 	| CALLSTMT FnCall
-	deriving Show
+	deriving (Show,Read)
 
 comas strs = "(":intersperse "," strs ++ [")"]
 instance CodeGen Var where
@@ -65,3 +66,9 @@ instance CodeGen Exp where
 		DOT t k -> [cgen t, "[", cgen k, "]"]
 		TABLE exps -> ["{"] ++ intersperse ", " (map r exps) ++ ["}"] where
 			r(k,v) = "[" ++ cgen k ++ "] = " ++ cgen v
+
+main = do
+	l <- getLine
+	putStrLn (cgen (Prelude.read l :: Stmt))
+	hFlush stdout
+	main
