@@ -4,6 +4,7 @@ import Sexp
 import qualified Lua as L
 import Data.List
 import System.IO
+import Repl
 
 data Exp
 	= IRPrim Prim
@@ -41,7 +42,10 @@ mkexp e = case e of
 	IR.IF c a b -> wrap $ L.IF (mkexp c) (mkblock a) (mkblock b)
 
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
-main = getLine >>= putStrLn . cgen . fromSexp . Sexp.read1 >> hFlush stdout >> main
+-- main = getLine >>= putStrLn . cgen . fromSexp . Sexp.read1 >> hFlush stdout >> main
+
+-- main = getContents >>= putStr . unlines . map (cgen . fromSexp) . Sexp.read
+main = Repl.repl (cgen . fromSexp . Sexp.read1)
 
 getArgList (Prim _) = error "invalid argument list."
 getArgList (Tbl t) = case Sexp.arrayNotArray t of
