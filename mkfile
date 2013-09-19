@@ -1,5 +1,6 @@
-all:V:
-Lua: Lua.hs Ty.hs Sexp.hs
-	ghc -main-is Lua.main Lua
+all:V: Lua IR
+%: %.hs
+	ghc -main-is $stem.main $stem
+
 clean:V:
-	rm -f *.o *.hi Lua
+	rm -f *.o *.hi Lua IR

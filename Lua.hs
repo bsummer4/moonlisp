@@ -67,8 +67,10 @@ instance CodeGen Exp where
 		TABLE exps -> ["{"] ++ intersperse ", " (map r exps) ++ ["}"] where
 			r(k,v) = "[" ++ cgen k ++ "] = " ++ cgen v
 
+maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
 main = do
 	l <- getLine
-	putStrLn (cgen (Prelude.read l :: Stmt))
-	hFlush stdout
-	main
+	case fmap cgen (maybeRead l :: Maybe Stmt) of
+		Nothing -> putStrLn ""
+		Just code -> putStrLn code
+	hFlush stdout >> main

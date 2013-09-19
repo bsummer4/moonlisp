@@ -1,2 +1,0 @@
-#!/bin/sh
-mk Lua && rlwrap sh -c './Lua | script -q /dev/null -c lua'
