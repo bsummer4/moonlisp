@@ -1,6 +1,8 @@
 module Repl(repl,maybeRead) where
 import Data.IORef
 import System.IO
+import System.IO.Error
+import Control.Exception
 
 data ChTy = NestCh | UnNestCh | SpaceCh | WordCh
 classify c =
@@ -39,7 +41,6 @@ getWordForm b acc = getc b >>= \c -> case classify c of
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
 repl f = do
 	b <- newBuf
-	getForm False b >>= \s -> case f s of
-		Nothing -> return()
-		Just s' -> putStrLn s'
-	hFlush stdout >> repl f
+	handle die $ getForm False b >>= p >> hFlush stdout >> repl f where
+		p s = case f s of {Nothing->return(); Just s'->putStrLn s'}
+		die e = if isEOFError e then d else d where d=return()

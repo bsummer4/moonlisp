@@ -1,13 +1,12 @@
 Lua code generation is ugly and probably not completely correct.
-Handle EOF from ‘readChar’.
+	Invalid variables names are possible.
+	String output isn't quoted correctly.
+	Too many (((parens))).
+	All-in-one-line.
+	The temp variable name can be used for real variables.
+	There are probably lots more issues.
+
 Merge SET and ASSIGN in the IR.
-Make the Lua code-generator produce prettier code.
-	I'm wasting a lot of time on mentally lexing the output.
-
-Add some safety-checks:
-	Lua backend should reject invalid variable names.
-	Reject variable names that clash with our temp variable.
-
 Separate ‘IR.hs’ from the IR→Lua transformation.
 	Compilation code should go in ‘IRLua.hs’ ‘IRPython.hs’ and ‘IRJS.hs’.
 
