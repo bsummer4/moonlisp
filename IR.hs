@@ -67,6 +67,9 @@ primify [] = []
 primify ((Prim p,e):more) = (p,fromSexp e) : primify more
 primify (_:more) = error "Keys in table-literals may not be tables themselves."
 tblExp a p = TBL $ (zip (map NUM [1..]) (map fromSexp a)) ++ (primify p)
+quoteExp (Prim p) = IRPrim p
+quoteExp (Tbl t) = TBL $ primify t
+
 fromSexp :: T -> Exp
 fromSexp (Prim (STR s)) = VAR s
 fromSexp (Prim x) = IRPrim x
@@ -84,6 +87,7 @@ fromSexp (Tbl t) = case Sexp.arrayNotArray t of
 	([Prim(STR "if"),a,b,c],[]) -> IF (fromSexp a) (fromSexp b) (fromSexp c)
 	((Prim(STR "if")):_,_) -> error "Invalid if statement."
 	((Prim(STR "tbl")):array,pairs) -> tblExp array pairs
+	([Prim(STR "quote"),e],[]) -> quoteExp e
 	(_,(_:_)) -> error "Functions may only take ordered arguments."
 	(fn:args,[]) -> (CALL (fromSexp fn) (map fromSexp args))
 	([],[]) -> IRPrim NIL

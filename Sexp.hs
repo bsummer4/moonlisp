@@ -10,7 +10,7 @@ data T = Prim Prim | Tbl [(T,T)] deriving (Eq,Show,Read,Ord)
 class Sexp a where { sexp::a->T; unsexp::T->a }
 instance Sexp T where { sexp=id; unsexp=id }
 data OneOrTwo a = Two a a | One a
-data Tok = TSEP | TPrim Prim | TBEGIN | TEND deriving (Eq,Ord,Show,Read)
+data Tok = TSEP | SYM String | TPrim Prim | TBEGIN | TEND deriving (Eq,Ord,Show,Read)
 instance CodeGen T where cgen = write
 isInt n = n == ((fromIntegral $ truncate n) :: Double)
 writeNum n = if isInt n then show(truncate n) else show n
@@ -47,11 +47,21 @@ mksym "#t" = TPrim T
 mksym "#f" = TPrim F
 mksym "#nil" = TPrim NIL
 mksym ('#':s) = error $ "Invalid hash pattern: " ++ show ('#':s)
-mksym s = TPrim $ case (reads s) of { [(d,[])]->NUM d; []->STR s }
+mksym s = case (reads s) of { [(d,[])]->TPrim$NUM d; []->SYM s }
 
 lreadSym sym [] = (mksym $ reverse sym, [])
 lreadSym sym (c:cs) = if c `elem` symChars then lreadSym (c:sym) cs
 	else (mksym $ reverse sym, c:cs)
+
+lreadDelimSym = r "" where
+	r acc (']':more) = (SYM$reverse acc, more)
+	r acc (c:more) = r (c:acc) more
+	r acc [] = error "Unexpected EOF"
+
+lreadDumbStr = r "" where
+	r acc ('"':more) = (TPrim$STR$reverse acc, more)
+	r acc (c:more) = r (c:acc) more
+	r acc [] = error "Unexpected EOF"
 
 lreadStr = r "" 1 where
 	r str 1 ('”':s) = (TPrim$STR$reverse str,s)
@@ -79,6 +89,9 @@ parseSeq toks = ordered 0 [] toks where
 	named acc _ = error "ordered elements may not follow named ones"
 	mktable acc = Tbl acc
 
+qtbl = Tbl . zip (map (Prim . NUM) [0..])
+quote e = qtbl [Prim$STR$"quote",e]
+
 parse1 toks = case toks of
 	[] -> Nothing
 	(TEND:_) -> error "Unexpected sequence terminator"
@@ -87,7 +100,8 @@ parse1 toks = case toks of
 	(TPrim T:ts) -> Just(Prim T,ts)
 	(TPrim F:ts) -> Just(Prim F,ts)
 	(TPrim NIL:ts) -> Just(Prim NIL,ts)
-	(TPrim(STR s):ts) -> Just(Prim$STR s,ts)
+	(TPrim(STR s):ts) -> Just(quote$Prim$STR s,ts)
+	(SYM s:ts) -> Just(Prim$STR s,ts)
 	(TPrim(NUM s):ts) -> Just(Prim$NUM s,ts)
 
 tokenize1 s = case s of
@@ -95,6 +109,8 @@ tokenize1 s = case s of
 	'=':cs -> Just(TSEP,cs)
 	'(':cs -> Just(TBEGIN,cs)
 	'“':cs -> Just(lreadStr cs)
+	'"':cs -> Just(lreadDumbStr cs)
+	'[':cs -> Just(lreadDelimSym cs)
 	')':cs -> Just(TEND,cs)
 	c:cs ->
 		if c `elem` wsChars then tokenize1 cs else
