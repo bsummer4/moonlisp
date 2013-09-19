@@ -38,7 +38,7 @@ write (Prim(STR s)) = showStr s
 write (Prim(NUM d)) = writeNum d
 write (Tbl es) = showTbl es
 
-symChars = "-+_.#" ++ ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
+symChars = "-+_.!#" ++ ['a'..'z'] ++ ['A'..'Z'] ++ ['α'..'ω'] ++ ['0'..'9']
 wsChars = " \n\t"
 todo() = error "TODO"
 

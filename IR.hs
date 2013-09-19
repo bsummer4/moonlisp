@@ -40,23 +40,51 @@ mkexp e = case e of
 	IR.SET t k v -> wrap $ L.ASSIGN (L.TVar(mkexp t)(mkexp k)) (mkexp v)
 	IR.IF c a b -> wrap $ L.IF (mkexp c) (mkblock a) (mkblock b)
 
-three = IRPrim(NUM 3)
-four = IRPrim(NUM 4)
-input = "(print (((λ(x) (λ(y) x)) 3) 4))"
-dataexp = (CALL (IR.VAR "print") [CALL (CALL (IR.Λ ["x"] (IR.Λ ["y"] (IR.VAR "x"))) [three]) [four]])
-output = "(print)((((function(v_x)local t;t=(function(v_y)local t;t=(v_x);return((t))end);return((t))end)((3.0)))((4.0))))"
-
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
 main = getLine >>= putStrLn . cgen . fromSexp . Sexp.read1 >> hFlush stdout >> main
 
--- Prim = T F NIL STR NUM
--- T = Prim Tbl
--- Exp = IRPrim VAR CALL Λ DO TBL ASSIGN GET SET IF
+getArgList (Prim _) = error "invalid argument list."
+getArgList (Tbl t) = case Sexp.arrayNotArray t of
+	(_,(_:_)) -> error "Keyword arguments are not supported."
+	(args,[]) -> map getArgName args where
+		getArgName (Prim (STR s)) = s
+		getArgName _ = "invalid argument list."
+
+-- TODO Merge SET and ASSIGN
+setExp [] = error "Can't set nothing"
+setExp [_] = error "Set it to what?"
+setExp [(VAR s),e] = ASSIGN s e
+setExp [_,e] = error "invalid set"
+setExp [t,k,v] = SET t k v
+setExp (t:k:remain) = setExp (GET t k : remain)
+
+getExp [] = error "Can't set nothing"
+getExp [e] = e
+getExp (e:k:ks) = getExp (GET e k : ks)
+
+primify :: [(T,T)] -> [(Prim,Exp)]
+primify [] = []
+primify ((Prim p,e):more) = (p,fromSexp e) : primify more
+primify (_:more) = error "Keys in table-literals may not be tables themselves."
+tblExp a p = TBL $ (zip (map NUM [1..]) (map fromSexp a)) ++ (primify p)
 
 fromSexp :: T -> Exp
 fromSexp (Prim (STR s)) = VAR s
 fromSexp (Prim x) = IRPrim x
 fromSexp (Tbl t) = case Sexp.arrayNotArray t of
-	(_,(_:_)) -> error "Functions can only take ordered arguments."
+	((Prim(STR "do")):body,[]) -> DO (map fromSexp body)
+	((Prim(STR "do")):_,_) -> error "invalid do statement."
+	((Prim(STR "lambda")):args:body,[]) -> Λ (getArgList args) (DO $ map fromSexp body)
+	((Prim(STR "lambda")):_,_) -> error "Invalid lambda statement."
+	((Prim(STR "λ")):args:body,[]) -> Λ (getArgList args) (DO $ map fromSexp body)
+	((Prim(STR "λ")):_,_) -> error "Invalid λ statement."
+	((Prim(STR ".")):args,[]) -> getExp (map fromSexp args)
+	((Prim(STR ".")):_,_) -> error "Invalid . statement."
+	((Prim(STR "!")):args,[]) -> setExp (map fromSexp args)
+	((Prim(STR "!")):_,_) -> error "Invalid ! statement."
+	([Prim(STR "if"),a,b,c],[]) -> IF (fromSexp a) (fromSexp b) (fromSexp c)
+	((Prim(STR "if")):_,_) -> error "Invalid if statement."
+	((Prim(STR "tbl")):array,pairs) -> tblExp array pairs
+	(_,(_:_)) -> error "Functions may only take ordered arguments."
 	(fn:args,[]) -> (CALL (fromSexp fn) (map fromSexp args))
-	([],[]) -> error "Can't call empty list."
+	([],[]) -> IRPrim NIL
