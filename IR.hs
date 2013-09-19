@@ -2,6 +2,8 @@ module IR where
 import Ty
 import Sexp
 import qualified Lua as L
+import qualified LuaCodeGen as LCG
+import qualified CodeGen as G
 import Data.List
 import System.IO
 import Repl
@@ -42,8 +44,10 @@ mkexp e = case e of
 	IF c a b -> wrap $ L.IF (mkexp c) (mkblock a) (mkblock b)
 
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
+cvt2 = fmap (G.gen . LCG.cg . mkstmt . fromSexp) . Sexp.read1_
 cvt = fmap (cgen . fromSexp) . Sexp.read1_
-main = repl cvt
+main = repl noprompt cvt2
+noprompt = putStrLn "_PROMPT2=\"\""
 
 getArgList (Prim _) = error "invalid argument list."
 getArgList (Tbl t) = case Sexp.arrayNotArray t of

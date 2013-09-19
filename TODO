@@ -1,11 +1,17 @@
 Lua code generation is ugly and probably not completely correct.
+	It would be nicer if integers were output without the trailing '.0'.
 	Invalid variables names are possible.
 	String output isn't quoted correctly.
-	Too many (((parens))).
-	All-in-one-line.
 	The temp variable name can be used for real variables.
+	Excessive use of lambda.
+	Using tmp variables everywhere is ugly, although
+		fixing this would probably be too complicated to be worth it.
+	If statements generate incorrect code.
+		They return from both branches (return from the function they are in).
+		Both branches generate their own tmp variables.
 	There are probably lots more issues.
 
+The REPL chokes on parens in string literals.
 Merge SET and ASSIGN in the IR.
 Separate ‘IR.hs’ from the IR→Lua transformation.
 	Compilation code should go in ‘IRLua.hs’ ‘IRPython.hs’ and ‘IRJS.hs’.

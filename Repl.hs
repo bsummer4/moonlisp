@@ -39,8 +39,9 @@ getWordForm b acc = getc b >>= \c -> case classify c of
 	_ -> ungetc b c >> (return $ reverse acc)
 
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
-repl f = do
+repl init f = do
+	init
 	b <- newBuf
-	handle die $ getForm False b >>= p >> hFlush stdout >> repl f where
+	handle die $ getForm False b >>= p >> hFlush stdout >> repl (return()) f where
 		p s = case f s of {Nothing->return(); Just s'->putStrLn s'}
 		die e = if isEOFError e then d else d where d=return()

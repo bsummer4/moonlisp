@@ -7,6 +7,7 @@ import Ty
 import Sexp
 import System.IO
 import Repl
+import qualified CodeGen as CG
 
 data Var = Var String | TVar Exp Exp deriving (Show,Read)
 data FnCall = FnCall Exp [Exp] deriving (Show,Read)
@@ -67,4 +68,4 @@ instance CodeGen Exp where
 		TABLE exps -> ["{"] ++ intersperse ", " (map r exps) ++ ["}"] where
 			r(k,v) = "[" ++ cgen k ++ "] = " ++ cgen v
 
-main = repl (\l -> fmap cgen (maybeRead l :: Maybe Stmt))
+main = repl (return()) (\l -> fmap cgen (maybeRead l :: Maybe Stmt))
