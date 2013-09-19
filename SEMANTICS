@@ -7,6 +7,8 @@ S-expression syntax:
 		{a=b c=d} means `(a=,b c=,d)
 	Strings are the same things as quoted symbols.
 		(== 'hi “hi”)
+	Notice, that there are NO SYMBOLS OR LISTS.
+		Instead, we use tables and strings for everything.
 
 Functions:
 	All functions take a single, array argument.

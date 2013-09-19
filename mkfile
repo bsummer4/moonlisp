@@ -1,5 +1,5 @@
 all:V: Lua IR
-%: %.hs
+%:V:
 	ghc -main-is $stem.main $stem
 
 clean:V:

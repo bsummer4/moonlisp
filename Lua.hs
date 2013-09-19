@@ -1,5 +1,5 @@
--- The file defines a representation of a subset of the Lua AST. This is used
--- for compiling to, and generating Lua code.
+-- The file defines a representation of a subset of the Lua AST.
+--  This is used for compiling to and generating Lua code.
 -- TODO Code generation is ugly and probably not completely correct.
 
 module Lua where

@@ -1,22 +1,28 @@
-Implement the Sexp typeclass in ‘Lua.hs’.
-Get a working Lua repl using sexpression syntax
-	using the representation from Lua.hs
+Clean up the REPL code.
+	Don't exit on errors.
+	Support multi-line expressions.
+	Make the Lua code-generator produce prettier code.
+		I'm wasting a lot of time on mentally lexing the output.
+
+Add some safety-checks:
+	Lua backend should reject invalid variable names.
+	Reject variable names that clash with our temp variable.
+
+Separate ‘IR.hs’ from the IR→Lua transformation.
+	Compilation code should go in ‘IRLua.hs’ ‘IRPython.hs’ and ‘IRJS.hs’.
 
 Install node.js
 Write a ‘JS.hs’ mirroring ‘Lua.hs’
-Get a working Javascript repl using s-expression syntax.
+Get a working Javascript REPL using s-expression syntax.
 Write a ‘Python.hs’ mirroring ‘Lua.hs’
-Get a working Python repl using s-expression syntax.
+Get a working Python REPL using s-expression syntax.
 Rework the IR:
-	It should support all the features common to all backends with
+	It should support all the features common to all back-ends with
 		minimal added niceness.
 
 Add s-expression support to the IR
 Write compilers from the IR to Python, Lua, and JS.
-Copy IR.hs to Moon.hs, and then start adding features.
-	Implicit returns.
-	Explicit stack objects.
-	Tail Call Optimization.
-	Table-based function calls.
-	String-based and function-based FFIs.
+Add features to IR.hs
 	Pattern matching
+	String-based and function-based FFIs.
+	Macros

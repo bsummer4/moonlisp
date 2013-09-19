@@ -1,18 +1,3 @@
--- TODO Use an obfuscated name instead of "t" for the temp variable.
--- TODO Make sure variable names don't clash with our temp variable.
--- TODO Make all of our functions take tables and return tables.
--- TODO support for pattern matching.
--- TODO support for building new lexical scopes.
--- TODO support defining new global variables.
--- TODO Support ‘and’ and ‘or’.
--- TODO Enforce valid Lua variable names for VAR values.
--- TODO Tail-call-optimization is not supported.
---  Lua demands tail calls be of the form "return exp".
---  Our compiler produces code in the form "t=exp; return t";
---  This requires a rewrite with a more complicated approach.
---  Or maybe a simple optimization pass on the Lua.Block
---   data structure after we generate it?
-
 module IR where
 import Ty
 import Sexp
