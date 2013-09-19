@@ -1,6 +1,4 @@
--- TODO Throw an error if we read duplicate keys.
-
-module Repl(repl) where
+module Repl(repl,maybeRead) where
 import Data.IORef
 import System.IO
 
@@ -18,7 +16,7 @@ ungetc b c = readIORef b >>= \c -> case c of
 	Just _ -> error "invalid use of getc/ungetc."
 
 endl = putStrLn "" >> hFlush stdout
-unexpectedChar c = error $ "unexpected character: " ++ show c
+unexpectedChar c = hPutStrLn stderr ("ignoring invalid character: " ++ show c)
 getForm nl b = getc b >>= \c -> case classify c of
 	SpaceCh -> do
 		if and[nl,c=='\n'] then endl else return ()
@@ -38,9 +36,10 @@ getWordForm b acc = getc b >>= \c -> case classify c of
 	WordCh -> getWordForm b (c:acc)
 	_ -> ungetc b c >> (return $ reverse acc)
 
+maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
 repl f = do
 	b <- newBuf
-	e <- getForm False b
-	putStrLn $ f e
-	hFlush stdout
-	repl f
+	getForm False b >>= \s -> case f s of
+		Nothing -> return()
+		Just s' -> putStrLn s'
+	hFlush stdout >> repl f

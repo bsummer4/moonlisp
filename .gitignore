@@ -1,4 +1,4 @@
-types
 *.hi
 *.o
 *.swp
+o.*

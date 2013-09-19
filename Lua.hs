@@ -1,12 +1,12 @@
 -- The file defines a representation of a subset of the Lua AST.
 --  This is used for compiling to and generating Lua code.
--- TODO Code generation is ugly and probably not completely correct.
 
 module Lua where
 import Data.List
 import Ty
 import Sexp
 import System.IO
+import Repl
 
 data Var = Var String | TVar Exp Exp deriving (Show,Read)
 data FnCall = FnCall Exp [Exp] deriving (Show,Read)
@@ -67,10 +67,4 @@ instance CodeGen Exp where
 		TABLE exps -> ["{"] ++ intersperse ", " (map r exps) ++ ["}"] where
 			r(k,v) = "[" ++ cgen k ++ "] = " ++ cgen v
 
-maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
-main = do
-	l <- getLine
-	case fmap cgen (maybeRead l :: Maybe Stmt) of
-		Nothing -> putStrLn ""
-		Just code -> putStrLn code
-	hFlush stdout >> main
+main = repl (\l -> fmap cgen (maybeRead l :: Maybe Stmt))

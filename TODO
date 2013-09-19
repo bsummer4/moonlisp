@@ -1,8 +1,8 @@
-Clean up the REPL code.
-	Don't exit on errors.
-	Support multi-line expressions.
-	Make the Lua code-generator produce prettier code.
-		I'm wasting a lot of time on mentally lexing the output.
+Lua code generation is ugly and probably not completely correct.
+Handle EOF from ‘readChar’.
+Merge SET and ASSIGN in the IR.
+Make the Lua code-generator produce prettier code.
+	I'm wasting a lot of time on mentally lexing the output.
 
 Add some safety-checks:
 	Lua backend should reject invalid variable names.

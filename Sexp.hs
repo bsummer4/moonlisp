@@ -3,8 +3,6 @@
 module Sexp where
 import Data.List
 import Ty
-import Data.IORef
-import System.IO
 
 data Prim = T | F | NIL | STR String | NUM Double deriving (Eq,Show,Read,Ord)
 data T = Prim Prim | Tbl [(T,T)] deriving (Eq,Show,Read,Ord)
@@ -103,53 +101,10 @@ tokenize1 s = case s of
 		if c `elem` symChars then Just(lreadSym [c] cs) else
 		error("unexpected '" ++ [c] ++ "'")
 
-streamProcess proc1 s = case proc1 s of
-	Nothing -> []
-	Just(t,s') -> t:streamProcess proc1 s'
-
-tokenize = streamProcess tokenize1
-parse = streamProcess parse1
+stream p s = case p s of {Nothing->[]; Just(t,s')->t:stream p s'}
+tokenize = stream tokenize1
+parse = stream parse1
 read = parse . tokenize
 read1 x = case Sexp.read x of {[]->Prim NIL; (t:ts)->t}
+read1_ x = case Sexp.read x of {[t]->Just t; _->Nothing}
 rpl = interact $ concat . map show . Sexp.read
-
-data ChTy = NestCh | UnNestCh | SpaceCh | WordCh
-classify c =
-	if c `elem` "(“{[" then NestCh else
-	if c `elem` "]}”)" then UnNestCh else
-	if c `elem` " \t\n\r" then SpaceCh else
-	WordCh
-
-newBuf = newIORef (Nothing :: Maybe Char)
-getc b = readIORef b >>= (\c->case c of {Nothing->getChar; Just c->return c})
-ungetc b c = readIORef b >>= \c -> case c of
-	Nothing -> writeIORef b c
-	Just _ -> error "invalid use of getc/ungetc."
-
-endl = putStrLn "" >> hFlush stdout
-unexpectedChar c = error $ "unexpected character: " ++ show c
-getForm nl b = getc b >>= \c -> case classify c of
-	SpaceCh -> do
-		if and[nl,c=='\n'] then endl else return ()
-		getForm (c=='\n') b
-	NestCh -> getNestForm b [c] 1
-	UnNestCh -> unexpectedChar c >> getForm nl b
-	WordCh -> getWordForm b [c]
-
-getNestForm b acc d = getc b >>= \c -> case (d,classify c) of
-	(_,NestCh) -> getNestForm b (c:acc) (d+1)
-	(1,UnNestCh) -> return $ reverse (c:acc)
-	(_,UnNestCh) -> getNestForm b (c:acc) (d-1)
-	(_,SpaceCh) -> getNestForm b (c:acc) d
-	(_,WordCh) -> getNestForm b (c:acc) d
-
-getWordForm b acc = getc b >>= \c -> case classify c of
-	WordCh -> getWordForm b (c:acc)
-	_ -> ungetc b c >> (return $ reverse acc)
-
-repl f = do
-	b <- newBuf
-	e <- getForm False b
-	putStrLn $ f e
-	hFlush stdout
-	repl f
