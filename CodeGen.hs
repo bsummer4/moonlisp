@@ -1,9 +1,5 @@
--- The file defines a representation of a subset of the Lua AST.
---  This is used for compiling to and generating Lua code.
-
 module CodeGen where
 import Data.List
-import Ty
 
 data DelimTy = Unsafe | Space | Safe deriving (Show,Read)
 type Code = (DelimTy,Code1)

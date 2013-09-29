@@ -1,5 +1,4 @@
 module IR where
-import Ty
 import Sexp
 import qualified Lua as L
 import qualified LuaCodeGen as LCG
@@ -26,7 +25,6 @@ ret stmts = L.BLOCK (L.LOCAL tmp : stmts) $ Just $ L.RETURN $ L.VAR tmp
 mkblock e = ret [mkstmt e]
 wrap s = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ ret [s]
 wraps ss = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ ret ss
-instance CodeGen Exp where cgen ir = cgen(mkstmt ir)
 mkstmt e = case e of
 	CALL e args -> L.CALLSTMT $ L.FnCall (mkexp e) (map mkexp args)
 	e -> L.ASSIGN tmp $ mkexp e
@@ -45,7 +43,6 @@ mkexp e = case e of
 
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
 cvt2 = fmap (G.gen . LCG.cg . mkstmt . fromSexp) . Sexp.read1_
-cvt = fmap (cgen . fromSexp) . Sexp.read1_
 main = repl noprompt cvt2
 noprompt = putStrLn "_PROMPT2=\"\""
 

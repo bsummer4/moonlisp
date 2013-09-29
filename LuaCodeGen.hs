@@ -1,5 +1,4 @@
 module LuaCodeGen where
-import Ty
 import Lua
 import Sexp
 import CodeGen as CG
@@ -51,5 +50,3 @@ instance ToCodeGen Exp where
 	cg (DOT a b) = jux (cg a) (brak$cg b)
 	cg (TABLE forms) = (\x->(Unsafe,x)) $ TUPLE ("{","}") $ map unpair forms where
 		unpair (a,b) = binop (brak$cg a) "=" (cg b)
-
-main = repl (return()) (\l -> fmap cgen (maybeRead l :: Maybe Stmt))

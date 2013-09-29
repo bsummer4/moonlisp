@@ -1,8 +1,5 @@
--- TODO Throw an error if we read duplicate keys.
-
 module Sexp where
 import Data.List
-import Ty
 
 data Prim = T | F | NIL | STR String | NUM Double deriving (Eq,Show,Read,Ord)
 data T = Prim Prim | Tbl [(T,T)] deriving (Eq,Show,Read,Ord)
@@ -11,7 +8,6 @@ class Sexp a where { sexp::a->T; unsexp::T->a }
 instance Sexp T where { sexp=id; unsexp=id }
 data OneOrTwo a = Two a a | One a
 data Tok = TSEP | SYM String | TPrim Prim | TBEGIN | TEND deriving (Eq,Ord,Show,Read)
-instance CodeGen T where cgen = write
 isInt n = n == ((fromIntegral $ truncate n) :: Double)
 writeNum n = if isInt n then show(truncate n) else show n
 arrayNotArray a = r 0 ([],[]) (sort a) where

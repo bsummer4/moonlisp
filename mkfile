@@ -1,4 +1,4 @@
-all:V: o.Lua o.IR
+all:V: o.IR
 o.%: `{ls *.hs}
 	ghc -main-is $stem.main $stem -o o.$stem
 
