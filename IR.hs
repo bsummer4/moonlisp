@@ -18,6 +18,7 @@ data Exp
 	| GET Exp Exp
 	| SET Exp Exp Exp
 	| IF Exp Exp Exp
+	| RETURN Exp
 	deriving (Read,Show)
 
 returnBlock stmts = L.BLOCK (L.LOCAL L.TMP : stmts) $ Just $ L.RETURN $ L.VAR L.TMP
@@ -28,6 +29,7 @@ mkstmts e = case e of
 	DO ss -> concat $ map mkstmts ss
 	CALL e args -> [L.ASSIGN L.TMP $ L.CALLEXP $ L.FnCall (mkexp e) (map mkexp args)]
 	ASSIGN s e -> [L.ASSIGN L.TMP (mkexp e), L.ASSIGN (L.Var s) (L.VAR L.TMP)]
+	RETURN e -> [L.DO $ L.BLOCK [] $ Just $ L.RETURN $ mkexp e]
 	e -> [L.ASSIGN L.TMP (mkexp e)]
 
 mkexp e = case e of
@@ -38,6 +40,7 @@ mkexp e = case e of
 	Λ args body -> L.Λ args $ returnBlock $ mkstmts body
 	DO exps -> wraps $ concat $ map mkstmts exps
 	TBL t -> L.TABLE $ map f t where f(a,b)=(mkexp(IRPrim a),mkexp b)
+	RETURN _ -> error "(return _) can't be used as an expression."
 	GET t k -> L.DOT (mkexp t) (mkexp k)
 	SET t k v -> wrap $ L.ASSIGN (L.TVar(mkexp t)(mkexp k)) (mkexp v)
 	IF c a b -> wrap $ L.IF (mkexp c) (mkblock a) (mkblock b)
@@ -87,6 +90,8 @@ fromSexp (Tbl t) = case Sexp.arrayNotArray t of
 	((Prim(STR "!")):_,_) -> error "Invalid ! statement."
 	([Prim(STR "if"),a,b,c],[]) -> IF (fromSexp a) (fromSexp b) (fromSexp c)
 	((Prim(STR "if")):_,_) -> error "Invalid if statement."
+	([Prim(STR "return"),e],[]) -> RETURN(fromSexp e)
+	((Prim(STR "return")):_,_) -> error "Invalid return statement."
 	((Prim(STR "tbl")):array,pairs) -> tblExp array pairs
 	([Prim(STR "quote"),e],[]) -> quoteExp e
 	(_,(_:_)) -> error "Functions may only take ordered arguments."
