@@ -30,22 +30,19 @@ instance ToCodeGen BlockEnd where
 	cg CONTINUE = atom "continue"
 
 instance ToCodeGen Stmt where
-	cg (DO b) = block ("do","end") (simplifyBlock b)
+	cg (DO b) = block("do","end") (simplifyBlock b)
 	cg (ASSIGN v e) = binop (cg v) "=" (cg e)
 	cg (LOCAL v) = stmt "local" (cg v)
 	cg (CALLSTMT f) = cg f
-	-- TODO FIXME HACK HACK HACK
-	cg (IF c a b) = hack["if", g c, blk "\nthen" a, blk "\nelse" b,"\nend"] where
-		hack ss = (Unsafe,ATOM$concat$intersperse " "$ss)
-		g x = gen(cg x)
-		blk w c = w ++ " " ++ (concat $ intersperse ";" $ map gen $ simplifyBlock c)
+	cg (IF c a b) = block ("if","end") [cg c,br "then" a, br "else" b] where
+		br s b = block(s,"") $ simplifyBlock b
 
 brak a = tuple ("[","]") [a]
 instance ToCodeGen Exp where
 	cg (LPrim p) = cg p
 	cg (CALLEXP f) = cg f
 	cg (VAR v) = cg v
-	cg (Λ as b) = (block ("function"++args,"end") (simplifyBlock b)) where
+	cg (Λ as b) = (block("function"++args,"end") (simplifyBlock b)) where
 		args = gen $ tuple ("(",")") $ map atom as
 	cg (DOT a b) = jux (cg a) (brak$cg b)
 	cg (TABLE forms) = (\x->(Unsafe,x)) $ TUPLE ("{","}") $ map unpair forms where

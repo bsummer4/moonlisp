@@ -21,29 +21,31 @@ data Exp
 	deriving (Read,Show)
 
 tmp = L.Var "tmp"
-ret stmts = L.BLOCK (L.LOCAL tmp : stmts) $ Just $ L.RETURN $ L.VAR tmp
-mkblock e = ret [mkstmt e]
-wrap s = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ ret [s]
-wraps ss = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ ret ss
-mkstmt e = case e of
-	CALL e args -> L.CALLSTMT $ L.FnCall (mkexp e) (map mkexp args)
-	e -> L.ASSIGN tmp $ mkexp e
+returnBlock stmts = L.BLOCK (L.LOCAL tmp : stmts) $ Just $ L.RETURN $ L.VAR tmp
+mkblock e = L.BLOCK (mkstmts e) Nothing
+wrap s = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ returnBlock [s]
+wraps ss = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ returnBlock ss
+mkstmts e = case e of
+	DO ss -> concat $ map mkstmts ss
+	CALL e args -> [L.ASSIGN tmp $ L.CALLEXP $ L.FnCall (mkexp e) (map mkexp args)]
+	ASSIGN s e -> [L.ASSIGN tmp (mkexp e), L.ASSIGN (L.Var s) (L.VAR tmp)]
+	e -> [L.ASSIGN tmp (mkexp e)]
 
 mkexp e = case e of
 	IRPrim x -> L.LPrim x
 	VAR s -> L.VAR $ L.Var s
 	ASSIGN s e -> wraps [L.ASSIGN(L.Var s)(mkexp e),L.ASSIGN tmp (L.VAR$L.Var s)]
 	CALL e args -> L.CALLEXP $ L.FnCall (mkexp e) (map mkexp args)
-	Λ args body -> L.Λ args $ mkblock body
-	DO exps -> wrap $ L.DO $ ret $ map mkstmt exps
+	Λ args body -> L.Λ args $ returnBlock $ mkstmts body
+	DO exps -> wraps $ concat $ map mkstmts exps
 	TBL t -> L.TABLE $ map f t where f(a,b)=(mkexp(IRPrim a),mkexp b)
 	GET t k -> L.DOT (mkexp t) (mkexp k)
 	SET t k v -> wrap $ L.ASSIGN (L.TVar(mkexp t)(mkexp k)) (mkexp v)
 	IF c a b -> wrap $ L.IF (mkexp c) (mkblock a) (mkblock b)
 
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
-cvt2 = fmap (G.gen . LCG.cg . mkstmt . fromSexp) . Sexp.read1_
-main = repl noprompt cvt2
+compile = concat . intersperse "\n" . map (G.gen . LCG.cg) . mkstmts . fromSexp
+main = repl noprompt $ fmap compile . Sexp.read1_
 noprompt = putStrLn "_PROMPT2=\"\""
 
 getArgList (Prim _) = error "invalid argument list."
@@ -62,8 +64,8 @@ setExp (t:k:remain) = setExp (GET t k : remain)
 getExp [] = error "Can't set nothing"
 getExp [e] = e
 getExp (e:k:ks) = getExp (GET e k : ks)
+lambdaExp args [e] = Λ (getArgList args) $ fromSexp e
 lambdaExp args body = Λ (getArgList args) (DO $ map fromSexp body)
-primify :: [(T,T)] -> [(Prim,Exp)]
 primify [] = []
 primify ((Prim p,e):more) = (p,fromSexp e) : primify more
 primify (_:more) = error "Keys in table-literals may not be tables themselves."
@@ -71,7 +73,6 @@ tblExp a p = TBL $ (zip (map NUM [1..]) (map fromSexp a)) ++ (primify p)
 quoteExp (Prim p) = IRPrim p
 quoteExp (Tbl t) = TBL $ primify t
 
-fromSexp :: T -> Exp
 fromSexp (Prim (STR s)) = VAR s
 fromSexp (Prim x) = IRPrim x
 fromSexp (Tbl t) = case Sexp.arrayNotArray t of
@@ -79,7 +80,7 @@ fromSexp (Tbl t) = case Sexp.arrayNotArray t of
 	((Prim(STR "do")):_,_) -> error "invalid do statement."
 	((Prim(STR "lambda")):args:body,[]) -> lambdaExp args body
 	((Prim(STR "lambda")):_,_) -> error "Invalid lambda statement."
-	((Prim(STR "λ")):args:body,[]) -> Λ (getArgList args) (DO $ map fromSexp body)
+	((Prim(STR "λ")):args:body,[]) -> lambdaExp args body
 	((Prim(STR "λ")):_,_) -> error "Invalid λ statement."
 	((Prim(STR ".")):args,[]) -> getExp (map fromSexp args)
 	((Prim(STR ".")):_,_) -> error "Invalid . statement."

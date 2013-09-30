@@ -1,34 +1,27 @@
 TODO Using duplicate keys in a table should be a syntax error.
-TODO Lua code generation is ugly and probably not completely correct.
+TODO Improve Lua Code Generation
 	TODO It would be nicer if integers were output without the trailing '.0'.
 	TODO Invalid variables names are possible.
-	TODO String output isn't quoted correctly.
+	TODO String output uses Haskell, not lua lexical syntax.
 	TODO The temp variable name can be used for real variables.
-	TODO Excessive use of lambda.
-	TODO Using tmp variables everywhere is ugly, although
-		fixing this would probably be too complicated to be worth it.
-	TODO If statements generate incorrect code.
-		They return from both branches (return from the function they are in).
-		Both branches generate their own tmp variables.
-	TODO Verify code-generation with the Lua reference manual.
+	TODO Instead of using tmp variables everywhere,
+		find a way to walk the code, finding statements in tail
+			positions, and turn them into returns.
+		For the lua backend, we could also implement tail calls this way.
 
 TODO The REPL chokes on parens in string literals.
-TODO Merge SET and ASSIGN in the IR.
-TODO Separate ‘IR.hs’ from the IR→Lua transformation.
-	Compilation code should go in ‘IRLua.hs’ ‘IRPython.hs’ and ‘IRJS.hs’.
+TODO Possibly merge SET and ASSIGN in the IR.
+TODO Restructure the code.
+	One big source file containing all the representations.
+	One source file per transformation.
 
 TODO Install node.js
-TODO Write a ‘JS.hs’ mirroring ‘Lua.hs’
-TODO Get a working Javascript REPL using s-expression syntax.
-TODO Write a ‘Python.hs’ mirroring ‘Lua.hs’
-TODO Get a working Python REPL using s-expression syntax.
-TODO Rework the IR:
-	It should support all the features common to all back-ends with
-		minimal added niceness.
-
-TODO Add s-expression support to the IR
-TODO Write compilers from the IR to Python, Lua, and JS.
+TODO Write a JS code-representation.
+TODO Get a working Javascript REPL using the primitive representation.
+TODO Add a compiler from IR to Javascript.
+TODO Add a compiler from IR to Python.
 TODO Add features to IR.hs
-	Pattern matching
+	Basic looping constructs.
+	Pattern matching.
 	String-based and function-based FFIs.
-	Macros
+	Macros.
