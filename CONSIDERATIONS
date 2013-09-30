@@ -1,0 +1,7 @@
+# Considerations
+## ‘return’ can't be allowed in the Internal Representation
+We compile statements into expressions like this:
+	STMT → (λ()return STMT)()
+Any return statements inside of STMT will expect to return to the surrounding
+	block, but they will not. Since there is no way around this, we cannot
+	support return statements.
