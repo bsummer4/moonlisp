@@ -2,11 +2,12 @@ TODO Using duplicate keys in a table should be a syntax error.
 TODO Improve Lua Code Generation
 	TODO String output uses Haskell, not lua lexical syntax.
 
+TODO The Code Generation stuff is starting to suck.
+	Once we get everything working, this needs to be rewritten to
+		cleanly handle all cases.
+
 TODO The REPL chokes on parens in string literals.
 TODO Possibly merge SET and ASSIGN in the IR.
-TODO Write a JS code-representation.
-TODO Get a working Javascript REPL using the primitive representation.
-TODO Add a compiler from IR to Javascript.
 TODO Add a compiler from IR to Python.
 TODO Add features to the IR
 	Basic looping constructs.

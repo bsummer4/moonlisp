@@ -15,6 +15,8 @@ data CExp1
 	| CBLOCK (String,String) [CExp]
 	| CTUPLE (String,String) [CExp]
 	| CBINOP CExp String CExp
+	| CTRIOP CExp String CExp String CExp
+	| CSEMI CExp
 	deriving (Show,Read)
 
 -- Internal Representation
@@ -66,7 +68,7 @@ data JExp
 	| JΛ [String] [JStmt]
 	| JDOT JExp JExp
 	| JTABLE [(JExp,JExp)]
-	| JIF JExp [JExp] [JExp]
+	| JIF JExp JExp JExp
 	| JASSIGN JVar JExp
 	deriving (Show,Read)
 
