@@ -44,3 +44,22 @@ jux a (CExp Unsafe b) = jux a (delim $ CExp Unsafe b)
 jux (CExp Space a) (CExp Space b) =
 	CExp Space $ CBINOP (CExp Space a) " " (CExp Space b)
 jux a b = CExp Space $ CBINOP a "" b
+
+retimplicit :: IExp -> IExp
+retimplicit p = r p where
+	r (IΛ args body) = IΛ args (blk body)
+	r (ICALL e es) = ICALL (r e) (map r es)
+	r (IDO es) = IDO (map r es)
+	r (ITBL forms) = ITBL(map (\(p,e)->(p,r e)) forms)
+	r (IASSIGN s e) = IASSIGN s (r e)
+	r (IGET a b) = IGET (r a) (r b)
+	r (ISET a b c) = ISET (r a) (r b) (r c)
+	r (IIF a b c) = IIF (r a) (r b) (r c)
+	r (IRETURN a) = IRETURN (r a)
+	r e@(IPrim _) = e
+	r e@(IVAR _) = e
+	blk e@(IDO[]) = e
+	blk (IDO es) = case reverse es of last:before->IDO $ reverse(blk last:before)
+	blk (IIF a b c) = IIF a (blk b) (blk c)
+	blk e@(IRETURN _) = e
+	blk e = IRETURN(retimplicit e)

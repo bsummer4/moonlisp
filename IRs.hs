@@ -56,3 +56,24 @@ data LStmt
 	| LBREAK
 	| LCONTINUE
 	deriving (Show,Read)
+
+-- Javascript Representation
+data JVar = JTMP | JVar String | JTVar JExp JExp deriving (Show,Read)
+data JExp
+	= JPrim Atom
+	| JCALL (JExp,[JExp])
+	| JVAR JVar
+	| JΛ [String] [JStmt]
+	| JDOT JExp JExp
+	| JTABLE [(JExp,JExp)]
+	| JIF JExp [JExp] [JExp]
+	| JASSIGN JVar JExp
+	deriving (Show,Read)
+
+data JStmt
+	= JLOCAL JVar
+	| JEXP JExp
+	| JRETURN JExp
+	| JBREAK
+	| JCONTINUE
+	deriving (Show,Read)

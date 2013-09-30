@@ -1,26 +1,26 @@
-module LuaCodeGen(luaCodeGen) where
+module LuaCG(luaCG) where
 import IRs
 import StrSexp
 import Util
 import Data.List
 import Repl
 
-luaCodeGen x = cg x
-class ToCodeGen a where { cg::a -> CExp }
-instance ToCodeGen Atom where
+luaCG x = cg x
+class ToCG a where { cg::a -> CExp }
+instance ToCG Atom where
 	cg T = atom("true")
 	cg F = atom("false")
 	cg NIL = atom("nil")
 	cg (STR s) = atom(show s)
 	cg (NUM d) = atom(writeNum d)
 
-instance ToCodeGen LVar where
+instance ToCG LVar where
 	cg (LTVar t k) = jux (cg t) (tuple ("[","]") [cg k])
 	cg LTMP = atom "_"
 	cg (LVar s) = atom(validateID s)
 
 cgcall(f,es) = jux (cg f) (tuple ("(",")") $ map cg es)
-instance ToCodeGen LStmt where
+instance ToCG LStmt where
 	cg (LDO b) = block("do","end") (map cg b)
 	cg (LASSIGN v e) = binop (cg v) "=" (cg e)
 	cg (LLOCAL v) = stmt "local" (cg v)
@@ -32,7 +32,7 @@ instance ToCodeGen LStmt where
 		br s b = block(s,"") $ map cg b
 
 brak a = tuple ("[","]") [a]
-instance ToCodeGen LExp where
+instance ToCG LExp where
 	cg (LPrim p) = cg p
 	cg (LCALLEXP f) = cgcall f
 	cg (LVAR v) = cg v
