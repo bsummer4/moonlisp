@@ -1,3 +1,9 @@
+# Moonlisp
+This is a simple lisp implementation that uses tables and strings instead of
+lists and symbols as it's core data structures. It compiles to readable Lua,
+Python, and Javascript.
+
+## Semantics
 S-expression syntax:
 	(1 2 3 a=4 b=5)
 	Keys must be primitive data structures.
