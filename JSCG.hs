@@ -34,22 +34,28 @@ instance ToCodeGen JExp where
 	cg (JΛ as b) = (blockexp("function"++args++"{","}") (map cg b)) where
 		args = gen $ paren $ map (atom.validateID) as
 	cg (JDOT a b) = jux (cg a) (brak[cg b])
-	cg (JTABLE forms) = (\x->(CExp Unsafe x)) $ CTUPLE ("{","}") $ map unpair forms where
+	cg (JTABLE forms) = tbl where
+		tbl = (\x->(CExp Unsafe x)) $ CTUPLE ("{","}") $ map unpair forms
 		unpair (a,b) = binop (brak[cg a]) ":" (cg b)
 	cg (JIF a b c) = triop (cg a) "?" (cg b) ":" (cg c)
 	cg (JASSIGN a b) = binop (cg a) "=" (cg b)
 
 keywords =
-	[ "and", "break", "do", "else", "elseif", "end", "false", "for", "function"
-	, "if","in", "local", "nil", "not", "or", "repeat", "return", "then", "true"
-	, "until", "while" ]
+	[ "break", "case", "catch", "continue", "debugger", "default", "delete"
+	, "do", "else", "finally", "for", "function", "if", "in", "instanceof"
+	, "new", "return", "switch", "this", "throw", "try", "typeof", "var"
+	, "void", "while", "with", "class", "enum", "export", "extends"
+	, "import", "super", "implements", "interface", "let", "package"
+	, "private", "protected", "public", "static", "yield" ]
 
-tokens =
-	[ "+", "-", "*", "/", "%", "^", "#", "==", "~=", "<=", ">=", "<", ">", "="
-	, "(", ")", "{", "}", "[", "]", ";", ":",  ",",  ".",  "..", "..." ]
+operators =
+	[ "^", "^=", "~", "<", "<<", "<<=", "<=", "=", "==", ">", ">=", ">>"
+	, ">>=", ">>>", ">>>=", "|", "|=", "||", "-", "-=", "--", ",", ":", "!"
+	, "!=", "?", "/", "/=", "*", "*=", "&", "&=", "&&", "%", "%=", "+", "+="
+	, "++", "delete", "new", "this", "typeof", "void" ]
 
 validateID id = if validID id then id else error s where
-	s = "'" ++ id ++ "' is not a valid Lua identifier."
+	s = "'" ++ id ++ "' is not a valid Javascript identifier."
 
 validID [] = False
 validID s@(first:rest) = and [not tmp, not kw, not leadingDigit, okChars] where

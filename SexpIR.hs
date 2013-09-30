@@ -38,8 +38,8 @@ sexpIR (STBL t) = case arrayNotArray t of
 	((SPRIM(STR "λ")):_,_) -> error "Invalid λ statement."
 	((SPRIM(STR ".")):args,[]) -> getExp (map sexpIR args)
 	((SPRIM(STR ".")):_,_) -> error "Invalid . statement."
-	((SPRIM(STR "!")):args,[]) -> setExp (map sexpIR args)
-	((SPRIM(STR "!")):_,_) -> error "Invalid ! statement."
+	((SPRIM(STR "←")):args,[]) -> setExp (map sexpIR args)
+	((SPRIM(STR "←")):_,_) -> error "Invalid ← statement."
 	([SPRIM(STR "if"),a,b,c],[]) -> IIF (sexpIR a) (sexpIR b) (sexpIR c)
 	((SPRIM(STR "if")):_,_) -> error "Invalid if statement."
 	((SPRIM(STR "tbl")):array,pairs) -> tblExp array pairs

@@ -36,7 +36,7 @@ Lisp forms:
 	(λ (args ...) body ...)
 	(do exp ...)
 	(match ((pattern ...) exp) body ...)
-	(! var exp)
+	(← var exp)
 	(quote exp)
 	(if exp ifexp elseexp)
 	#lua[%1+%2] construct functions using lua syntax literals.

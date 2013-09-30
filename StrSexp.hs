@@ -11,7 +11,7 @@ data Tok = TSEP | SYM String | TPrim Atom | TBEGIN | TEND deriving (Eq,Ord,Show,
 --  Any string read with ‘read’ should be outputed correctly. However,
 --  "“" could be constructed by other code which would case invalid output
 --  from write.
-showStr s = if all (`elem` symChars) s then s else "“" ++ s ++ "”"
+showStr s = if all (not.(`elem` unsymChars)) s then s else "“" ++ s ++ "”"
 showTbl es = r $ arrayNotArray es where
 	r(ordered,named) = "(" ++ mix(order ordered ++ name named) ++ ")"
 	name = map pair . sort
@@ -27,18 +27,19 @@ swrite (SPRIM(STR s)) = showStr s
 swrite (SPRIM(NUM d)) = writeNum d
 swrite (STBL es) = showTbl es
 
-symChars = "-+_.!#" ++ ['a'..'z'] ++ ['A'..'Z'] ++ ['α'..'ω'] ++ ['0'..'9']
+unsymChars = "()[]{}“” \t\n\r"
 wsChars = " \n\t"
 todo() = error "TODO"
 
 mksym "#t" = TPrim T
 mksym "#f" = TPrim F
 mksym "#nil" = TPrim NIL
+mksym "#" = SYM "#"
 mksym ('#':s) = error $ "Invalid hash pattern: " ++ show ('#':s)
 mksym s = case (reads s) of { [(d,[])]->TPrim$NUM d; []->SYM s }
 
 lreadSym sym [] = (mksym $ reverse sym, [])
-lreadSym sym (c:cs) = if c `elem` symChars then lreadSym (c:sym) cs
+lreadSym sym (c:cs) = if not (c `elem` unsymChars) then lreadSym (c:sym) cs
 	else (mksym $ reverse sym, c:cs)
 
 lreadDelimSym = r "" where
@@ -102,7 +103,7 @@ tokenize1 s = case s of
 	')':cs -> Just(TEND,cs)
 	c:cs ->
 		if c `elem` wsChars then tokenize1 cs else
-		if c `elem` symChars then Just(lreadSym [c] cs) else
+		if not(c `elem` unsymChars) then Just(lreadSym [c] cs) else
 		error("unexpected '" ++ [c] ++ "'")
 
 stream p s = case p s of {Nothing->[]; Just(t,s')->t:stream p s'}
