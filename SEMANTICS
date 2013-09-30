@@ -25,26 +25,15 @@ There is non statement/expression separation.
 	Every "block" expression returns the value returned by the last
 		expression that it contains.
 
-Built-in functions:
-	(write e): prints primitive data using s-expression syntax.
-	(read e): parses primitive data using s-expression syntax.
-	#lua[%1+%2] construct functions using lua syntax literals.
-
 Lisp forms:
 	(exp exp ...)
-	(let (a=(read) b=(read)) (write a b))
-	(let (a=(read) b=(read)) (write a b))
+	(λ (args ...) body ...)
+	(do exp ...)
 	(match ((pattern ...) exp) body ...)
-	(define var exp)
-	(define (fn pattern ...) body ...)
+	(! var exp)
 	(quote exp)
 	(if exp ifexp elseexp)
-	(if exp then=exp else=exp)
-	(lambda (pattern ...) body ...)
-	(lambda name body ...)
-	(and exp ...)
-	(or exp ...)
-	(begin exp ...)
+	#lua[%1+%2] construct functions using lua syntax literals.
 
 Pattern-matching examples:
 	(match ((a b k=c) {1 2 k=3}) (write a b c))

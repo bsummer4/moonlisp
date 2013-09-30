@@ -1,10 +1,6 @@
 TODO Using duplicate keys in a table should be a syntax error.
 TODO Improve Lua Code Generation
 	TODO String output uses Haskell, not lua lexical syntax.
-	TODO Instead of using tmp variables everywhere,
-		find a way to walk the code, finding statements in tail
-			positions, and turn them into returns.
-		For the lua backend, we could also implement tail calls this way.
 
 TODO The REPL chokes on parens in string literals.
 TODO Possibly merge SET and ASSIGN in the IR.
