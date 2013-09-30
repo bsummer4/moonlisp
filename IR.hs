@@ -21,32 +21,40 @@ data Exp
 	| RETURN Exp
 	deriving (Read,Show)
 
-returnBlock stmts = L.BLOCK (L.LOCAL L.TMP : stmts) $ Just $ L.RETURN $ L.VAR L.TMP
+returnBlock stmts = L.BLOCK stmts Nothing
 mkblock e = L.BLOCK (mkstmts e) Nothing
 wrap s = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ returnBlock [s]
 wraps ss = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ returnBlock ss
 mkstmts e = case e of
 	DO ss -> concat $ map mkstmts ss
-	CALL e args -> [L.ASSIGN L.TMP $ L.CALLEXP $ L.FnCall (mkexp e) (map mkexp args)]
-	ASSIGN s e -> [L.ASSIGN L.TMP (mkexp e), L.ASSIGN (L.Var s) (L.VAR L.TMP)]
+	CALL e args -> [L.CALLSTMT $ L.FnCall (mkexp e) (map mkexp args)]
+	ASSIGN s e -> [L.ASSIGN (L.Var s) (mkexp e)]
 	RETURN e -> [L.DO $ L.BLOCK [] $ Just $ L.RETURN $ mkexp e]
+	SET t k v -> [L.ASSIGN (L.TVar (mkexp t) (mkexp k)) (mkexp v)]
+	IF c a b -> [L.IF (mkexp c) (mkblock a) (mkblock b)]
 	e -> [L.ASSIGN L.TMP (mkexp e)]
 
+-- Read carefully! This will not infinite loop because
+-- ‘unstmt’ and ‘retimplicit’ will always return a
+-- lambda expression in this case. That is fed back into
+-- ‘mkexp’ which will never call unstmt when given a
+-- lambda expression.
+unstmt s = mkexp $ retimplicit $ Λ [] s
 mkexp e = case e of
 	IRPrim x -> L.LPrim x
 	VAR s -> L.VAR $ L.Var s
-	ASSIGN s e -> wraps [L.ASSIGN(L.Var s)(mkexp e),L.ASSIGN L.TMP (L.VAR$L.Var s)]
 	CALL e args -> L.CALLEXP $ L.FnCall (mkexp e) (map mkexp args)
 	Λ args body -> L.Λ args $ returnBlock $ mkstmts body
-	DO exps -> wraps $ concat $ map mkstmts exps
 	TBL t -> L.TABLE $ map f t where f(a,b)=(mkexp(IRPrim a),mkexp b)
 	RETURN _ -> error "(return _) can't be used as an expression."
 	GET t k -> L.DOT (mkexp t) (mkexp k)
-	SET t k v -> wrap $ L.ASSIGN (L.TVar(mkexp t)(mkexp k)) (mkexp v)
-	IF c a b -> wrap $ L.IF (mkexp c) (mkblock a) (mkblock b)
+	ASSIGN s e -> unstmt e
+	DO exps -> unstmt e
+	SET t k v -> unstmt e
+	IF c a b -> unstmt e
 
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
-compile = concat . intersperse "\n" . map (G.gen . LCG.cg) . mkstmts . fromSexp
+compile = concat . intersperse "\n" . map (G.gen . LCG.cg) . mkstmts . retimplicit .  fromSexp
 main = repl noprompt $ fmap compile . Sexp.read1_
 noprompt = putStrLn "_PROMPT2=\"\""
 
@@ -97,3 +105,21 @@ fromSexp (Tbl t) = case Sexp.arrayNotArray t of
 	(_,(_:_)) -> error "Functions may only take ordered arguments."
 	(fn:args,[]) -> (CALL (fromSexp fn) (map fromSexp args))
 	([],[]) -> IRPrim NIL
+
+retimplicit p = r p where
+	r (Λ args body) = Λ args (blk body)
+	r (CALL e es) = CALL (r e) (map r es)
+	r (DO es) = DO (map r es)
+	r (TBL forms) = TBL(map (\(p,e)->(p,r e)) forms)
+	r (ASSIGN s e) = ASSIGN s (r e)
+	r (GET a b) = GET (r a) (r b)
+	r (SET a b c) = SET (r a) (r b) (r c)
+	r (IF a b c) = IF (r a) (r b) (r c)
+	r (RETURN a) = RETURN (r a)
+	r e@(IRPrim _) = e
+	r e@(VAR _) = e
+	blk e@(DO[]) = e
+	blk (DO es) = case reverse es of last:before->DO $ reverse(blk last:before)
+	blk (IF a b c) = IF a (blk b) (blk c)
+	blk e@(RETURN _) = e
+	blk e = RETURN(retimplicit e)
