@@ -16,8 +16,7 @@ instance ToCodeGen Prim where
 instance ToCodeGen Var where
 	cg (TVar t k) = jux (cg t) (tuple ("[","]") [cg k])
 	cg TMP = atom "_"
-	cg (Var s) = if validID s then atom s else
-		error $ "'" ++ s ++ "' is not a valid Lua identifier."
+	cg (Var s) = atom(validateID s)
 
 instance ToCodeGen FnCall where
 	cg (FnCall f es) = jux (cg f) (tuple ("(",")") $ map cg es)
@@ -45,7 +44,7 @@ instance ToCodeGen Exp where
 	cg (CALLEXP f) = cg f
 	cg (VAR v) = cg v
 	cg (Λ as b) = (block("function"++args,"end") (simplifyBlock b)) where
-		args = gen $ tuple ("(",")") $ map atom as
+		args = gen $ tuple ("(",")") $ map (atom.validateID) as
 	cg (DOT a b) = jux (cg a) (brak$cg b)
 	cg (TABLE forms) = (\x->(Unsafe,x)) $ TUPLE ("{","}") $ map unpair forms where
 		unpair (a,b) = binop (brak$cg a) "=" (cg b)
@@ -58,6 +57,9 @@ keywords =
 tokens =
 	[ "+", "-", "*", "/", "%", "^", "#", "==", "~=", "<=", ">=", "<", ">", "="
 	, "(", ")", "{", "}", "[", "]", ";", ":",  ",",  ".",  "..", "..." ]
+
+validateID id = if validID id then id else error s where
+	s = "'" ++ id ++ "' is not a valid Lua identifier."
 
 validID [] = False
 validID s@(first:rest) = and [not tmp, not kw, not leadingDigit, okChars] where
