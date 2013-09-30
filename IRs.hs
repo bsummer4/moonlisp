@@ -68,6 +68,9 @@ data JExp
 	| JΛ [String] [JStmt]
 	| JDOT JExp JExp
 	| JTABLE [(JExp,JExp)]
+	| JOP0 String
+	| JOP1 String JExp
+	| JOP2 JExp String JExp
 	| JIF JExp JExp JExp
 	| JASSIGN JVar JExp
 	deriving (Show,Read)

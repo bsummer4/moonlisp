@@ -1,4 +1,4 @@
-module JSCG(jsCG) where
+module JSCG(jsCG,jsymClass,JSymClass(JOpN,JSId,JSReserved,JSKeyword)) where
 import IRs
 import StrSexp
 import Util
@@ -6,6 +6,12 @@ import Data.List
 import Repl
 
 jsCG x = cg x
+data JSymClass = JOpN Int | JSId | JSReserved | JSKeyword
+jsymClass s = case (s `elem` keywords, lookup s operators) of
+	(True,_) -> JSKeyword
+	(_,Just n) -> JOpN n
+	(_,Nothing) -> JSId
+
 class ToCodeGen a where { cg::a -> CExp }
 (brak,paren) = (tuple("[","]"), tuple("(",")"))
 instance ToCodeGen Atom where
@@ -39,20 +45,25 @@ instance ToCodeGen JExp where
 		unpair (a,b) = binop (brak[cg a]) ":" (cg b)
 	cg (JIF a b c) = triop (cg a) "?" (cg b) ":" (cg c)
 	cg (JASSIGN a b) = binop (cg a) "=" (cg b)
+	cg (JOP0 o) = CExp Unsafe $ CATOM o
+	cg (JOP1 o e) = stmt o (cg e)
+	cg (JOP2 a o b) = binop (cg a) o (cg b)
 
 keywords =
-	[ "break", "case", "catch", "continue", "debugger", "default", "delete"
-	, "do", "else", "finally", "for", "function", "if", "in", "instanceof"
-	, "new", "return", "switch", "this", "throw", "try", "typeof", "var"
-	, "void", "while", "with", "class", "enum", "export", "extends"
-	, "import", "super", "implements", "interface", "let", "package"
-	, "private", "protected", "public", "static", "yield" ]
+	[ "break", "case", "catch", "continue", "debugger", "default", "do"
+	, "else", "finally", "for", "function", "if", "in", "instanceof"
+	, "return", "switch", "throw", "try", "var", "while", "with", "class"
+	, "enum", "export", "extends", "import", "super", "implements"
+	, "interface", "let", "package", "private", "protected", "public"
+	, "static", "yield" ]
 
 operators =
-	[ "^", "^=", "~", "<", "<<", "<<=", "<=", "=", "==", ">", ">=", ">>"
-	, ">>=", ">>>", ">>>=", "|", "|=", "||", "-", "-=", "--", ",", ":", "!"
-	, "!=", "?", "/", "/=", "*", "*=", "&", "&=", "&&", "%", "%=", "+", "+="
-	, "++", "delete", "new", "this", "typeof", "void" ]
+	[ ("^",2), ("^=",2), ("~",1), ("<",2), ("<<",2), ("<<=",2), ("<=",2)
+	, ("==",2), (">",2), (">=",2), (">>",2), (">>=",2), (">>>",2)
+	, (">>>=",2), ("|",2), ("|=",2), ("||",2), ("-",2), ("-=",2), ("--",1)
+	, (",",2), ("!",1), ("!=",2), ("/",2), ("/=",2), ("*",2), ("*=",2)
+	, ("&",2), ("&=",2), ("&&",2), ("%",2), ("%=",2), ("+",2), ("+=",2)
+	, ("++",2), ("delete",1), ("new",1), ("this",0), ("typeof",1), ("void",1) ]
 
 validateID id = if validID id then id else error s where
 	s = "'" ++ id ++ "' is not a valid Javascript identifier."

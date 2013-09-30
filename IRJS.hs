@@ -24,11 +24,29 @@ mkstmts e = case e of
 -- ‘mkexp’ which will never call unstmt when given a
 -- lambda expression.
 unstmt s = mkexp $ retimplicit $ IΛ [] s
+jsop 0 s [] = JOP0 s
+jsop 1 s [a] = JOP1 s (mkexp a)
+jsop 2 s [a,b] = JOP2 (mkexp a) s (mkexp b)
+jsop _ s _ = error $ "Invalid use of operator " ++ s ++ "."
+jscall e args = case e of
+	IVAR s -> case jsymClass s of
+		JOpN n -> jsop n s args
+		JSId -> JCALL(mkexp e, map mkexp args)
+		JSReserved -> error $ s ++ " is a reserved word in Javascript."
+		JSKeyword -> error $ s ++ " is a keyword in Javascript."
+	e -> JCALL(mkexp e, map mkexp args)
+
+jsvar s = case jsymClass s of
+	JSId -> JVAR $ JVar s
+	JOpN _ -> error "Javascript operator used as id."
+	JSReserved -> error $ s ++ " is a reserved work in Javascript"
+	JSKeyword -> error $ s ++ " is a keyword in Javascript."
+
 mkexp :: IExp -> JExp
 mkexp e = case e of
 	IPrim x -> JPrim x
-	IVAR s -> JVAR $ JVar s
-	ICALL e args -> JCALL(mkexp e, map mkexp args)
+	IVAR s -> jsvar s
+	ICALL e args -> jscall e args
 	IΛ args body -> JΛ args $ mkstmts body
 	ITBL t -> JTABLE $ map f t where f(a,b)=(mkexp(IPrim a),mkexp b)
 	IRETURN _ -> error "(return _) can't be used as an expression."
