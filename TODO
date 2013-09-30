@@ -8,9 +8,22 @@ TODO The Code Generation stuff is starting to suck.
 
 TODO The REPL chokes on parens in string literals.
 TODO Possibly merge SET and ASSIGN in the IR.
+TODO Add some syntactic sugar
+		TODO a.b → (. a "b")
+		TODO a.b.c → (. (. a "b") "c")
+		TODO (a.b b.c) → ((. a "b") (. b "c"))
+		TODO {1 2 3 a=b} → (tbl 1 2 3 a=b)
+		TODO 'x → (quote x)
+		TODO `x → (quasiquote x)
+		TODO ,x → (unquote x)
+
 TODO Add a compiler from IR to Python.
-TODO Add features to the IR
-	Basic looping constructs.
-	Pattern matching.
-	String-based and function-based FFIs.
-	Macros.
+TODO Add support for basic looping constructs.
+TODO Add support for pattern matching.
+	TODO Implement single-variable let-forms in the IR.
+	TODO First implement a simple switch statement on atomic values.
+		Add support to the IR.
+			Compile down to if-else chains for now.
+	TODO Generalize the IR
+TODO Implement the ‘lua’ special form for accepting multiple return values.
+TODO Implement r5rs-style ‘syntax-case’ macros

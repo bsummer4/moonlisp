@@ -39,7 +39,6 @@ Lisp forms:
 	(← var exp)
 	(quote exp)
 	(if exp ifexp elseexp)
-	#lua[%1+%2] construct functions using lua syntax literals.
 
 Pattern-matching examples:
 	(match ((a b k=c) {1 2 k=3}) (write a b c))
