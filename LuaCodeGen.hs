@@ -43,7 +43,7 @@ instance ToCodeGen Exp where
 	cg (LPrim p) = cg p
 	cg (CALLEXP f) = cg f
 	cg (VAR v) = cg v
-	cg (Λ as b) = (block("function"++args,"end") (simplifyBlock b)) where
+	cg (Λ as b) = (blockexp("function"++args,"end") (simplifyBlock b)) where
 		args = gen $ tuple ("(",")") $ map (atom.validateID) as
 	cg (DOT a b) = jux (cg a) (brak$cg b)
 	cg (TABLE forms) = (\x->(Unsafe,x)) $ TUPLE ("{","}") $ map unpair forms where
