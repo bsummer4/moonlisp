@@ -3,7 +3,7 @@
 
 module Lua where
 import Sexp
-data Var = Var String | TVar Exp Exp deriving (Show,Read)
+data Var = TMP | Var String | TVar Exp Exp deriving (Show,Read)
 data FnCall = FnCall Exp [Exp] deriving (Show,Read)
 data Block = BLOCK [Stmt] (Maybe BlockEnd) deriving (Show,Read)
 data BlockEnd = RETURN Exp | BREAK | CONTINUE deriving (Show,Read)

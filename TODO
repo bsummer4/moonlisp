@@ -1,9 +1,6 @@
 TODO Using duplicate keys in a table should be a syntax error.
 TODO Improve Lua Code Generation
-	TODO It would be nicer if integers were output without the trailing '.0'.
-	TODO Invalid variables names are possible.
 	TODO String output uses Haskell, not lua lexical syntax.
-	TODO The temp variable name can be used for real variables.
 	TODO Instead of using tmp variables everywhere,
 		find a way to walk the code, finding statements in tail
 			positions, and turn them into returns.

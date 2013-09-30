@@ -20,21 +20,20 @@ data Exp
 	| IF Exp Exp Exp
 	deriving (Read,Show)
 
-tmp = L.Var "tmp"
-returnBlock stmts = L.BLOCK (L.LOCAL tmp : stmts) $ Just $ L.RETURN $ L.VAR tmp
+returnBlock stmts = L.BLOCK (L.LOCAL L.TMP : stmts) $ Just $ L.RETURN $ L.VAR L.TMP
 mkblock e = L.BLOCK (mkstmts e) Nothing
 wrap s = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ returnBlock [s]
 wraps ss = L.CALLEXP $ L.FnCall fn [] where fn = L.Λ [] $ returnBlock ss
 mkstmts e = case e of
 	DO ss -> concat $ map mkstmts ss
-	CALL e args -> [L.ASSIGN tmp $ L.CALLEXP $ L.FnCall (mkexp e) (map mkexp args)]
-	ASSIGN s e -> [L.ASSIGN tmp (mkexp e), L.ASSIGN (L.Var s) (L.VAR tmp)]
-	e -> [L.ASSIGN tmp (mkexp e)]
+	CALL e args -> [L.ASSIGN L.TMP $ L.CALLEXP $ L.FnCall (mkexp e) (map mkexp args)]
+	ASSIGN s e -> [L.ASSIGN L.TMP (mkexp e), L.ASSIGN (L.Var s) (L.VAR L.TMP)]
+	e -> [L.ASSIGN L.TMP (mkexp e)]
 
 mkexp e = case e of
 	IRPrim x -> L.LPrim x
 	VAR s -> L.VAR $ L.Var s
-	ASSIGN s e -> wraps [L.ASSIGN(L.Var s)(mkexp e),L.ASSIGN tmp (L.VAR$L.Var s)]
+	ASSIGN s e -> wraps [L.ASSIGN(L.Var s)(mkexp e),L.ASSIGN L.TMP (L.VAR$L.Var s)]
 	CALL e args -> L.CALLEXP $ L.FnCall (mkexp e) (map mkexp args)
 	Λ args body -> L.Λ args $ returnBlock $ mkstmts body
 	DO exps -> wraps $ concat $ map mkstmts exps

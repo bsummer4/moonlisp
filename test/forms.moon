@@ -11,4 +11,4 @@
 (! aa (if #nil #f #t))
 (! bb (if #t #nil #f))
 (p (. (tbl a=aa b=bb) "a"))
-(os.exit)
+((. os "exit"))

@@ -11,11 +11,13 @@ instance ToCodeGen Prim where
 	cg F = atom("false")
 	cg NIL = atom("nil")
 	cg (STR s) = atom(show s)
-	cg (NUM d) = atom(show d)
+	cg (NUM d) = atom(writeNum d)
 
 instance ToCodeGen Var where
-	cg (Var s) = atom s
 	cg (TVar t k) = jux (cg t) (tuple ("[","]") [cg k])
+	cg TMP = atom "_"
+	cg (Var s) = if validID s then atom s else
+		error $ "'" ++ s ++ "' is not a valid Lua identifier."
 
 instance ToCodeGen FnCall where
 	cg (FnCall f es) = jux (cg f) (tuple ("(",")") $ map cg es)
@@ -47,3 +49,22 @@ instance ToCodeGen Exp where
 	cg (DOT a b) = jux (cg a) (brak$cg b)
 	cg (TABLE forms) = (\x->(Unsafe,x)) $ TUPLE ("{","}") $ map unpair forms where
 		unpair (a,b) = binop (brak$cg a) "=" (cg b)
+
+keywords =
+	[ "and", "break", "do", "else", "elseif", "end", "false", "for", "function"
+	, "if","in", "local", "nil", "not", "or", "repeat", "return", "then", "true"
+	, "until", "while" ]
+
+tokens =
+	[ "+", "-", "*", "/", "%", "^", "#", "==", "~=", "<=", ">=", "<", ">", "="
+	, "(", ")", "{", "}", "[", "]", ";", ":",  ",",  ".",  "..", "..." ]
+
+validID [] = False
+validID s@(first:rest) = and [not tmp, not kw, not leadingDigit, okChars] where
+	kw = s `elem` keywords
+	leadingDigit = first `elem` digits
+	okChars = all (`elem` luaid) s
+	letters = ['a'..'z'] ++ ['A'..'Z']
+	digits = ['0'..'9']
+	luaid = "_" ++ letters ++ digits
+	tmp = s == "_"
