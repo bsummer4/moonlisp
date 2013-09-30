@@ -7,7 +7,7 @@ data Atom = T | F | NIL | STR String | NUM Double deriving (Eq,Show,Read,Ord)
 data Sexp = SPRIM Atom | STBL [(Sexp,Sexp)] deriving (Eq,Show,Read,Ord)
 
 -- Code Generation
-data CExp = CExp (DelimTy,CExp1) deriving (Show,Read)
+data CExp = CExp DelimTy CExp1 deriving (Show,Read)
 data DelimTy = Unsafe | Space | Safe deriving (Show,Read)
 data CExp1
 	= CATOM String

@@ -1,19 +1,11 @@
-module Sexp where
+module StrSexp(sread,sread1,sread1_,swrite) where
+import IRs
+import Util
 import Data.List
 
-data Prim = T | F | NIL | STR String | NUM Double deriving (Eq,Show,Read,Ord)
-data T = Prim Prim | Tbl [(T,T)] deriving (Eq,Show,Read,Ord)
-(t,f,n) = (Prim T, Prim F, Prim NIL)
-class Sexp a where { sexp::a->T; unsexp::T->a }
-instance Sexp T where { sexp=id; unsexp=id }
+(t,f,n) = (SPRIM T, SPRIM F, SPRIM NIL)
 data OneOrTwo a = Two a a | One a
-data Tok = TSEP | SYM String | TPrim Prim | TBEGIN | TEND deriving (Eq,Ord,Show,Read)
-isInt n = n == ((fromIntegral $ truncate n) :: Double)
-writeNum n = if isInt n then show(truncate n) else show n
-arrayNotArray a = r 0 ([],[]) (sort a) where
-	r i (o,u) [] = (reverse o,reverse u)
-	r i (o,u) ((k,v):m) = if same k i then r (i+1) (v:o,u) m else r i (o,(k,v):u) m
-	same k i = k == (Prim $ NUM i)
+data Tok = TSEP | SYM String | TPrim Atom | TBEGIN | TEND deriving (Eq,Ord,Show,Read)
 
 -- TODO Make invalid strings impossible to represent.
 --  Any string read with ‘read’ should be outputed correctly. However,
@@ -23,17 +15,17 @@ showStr s = if all (`elem` symChars) s then s else "“" ++ s ++ "”"
 showTbl es = r $ arrayNotArray es where
 	r(ordered,named) = "(" ++ mix(order ordered ++ name named) ++ ")"
 	name = map pair . sort
-	order = map write
+	order = map swrite
 	mix = concat . intersperse " "
-	pair(k,v) = write k ++ "=" ++ write v
+	pair(k,v) = swrite k ++ "=" ++ swrite v
 
-writes = unlines . map write
-write (Prim T) = "#t"
-write (Prim F) = "#f"
-write (Prim NIL) = "#nil"
-write (Prim(STR s)) = showStr s
-write (Prim(NUM d)) = writeNum d
-write (Tbl es) = showTbl es
+writes = unlines . map swrite
+swrite (SPRIM T) = "#t"
+swrite (SPRIM F) = "#f"
+swrite (SPRIM NIL) = "#nil"
+swrite (SPRIM(STR s)) = showStr s
+swrite (SPRIM(NUM d)) = writeNum d
+swrite (STBL es) = showTbl es
 
 symChars = "-+_.!#" ++ ['a'..'z'] ++ ['A'..'Z'] ++ ['α'..'ω'] ++ ['0'..'9']
 wsChars = " \n\t"
@@ -73,7 +65,7 @@ parseSeq toks = ordered 0 [] toks where
 	ordered n acc (t:TSEP:ts) = named acc (t:TSEP:ts)
 	ordered n acc ts = case parse1 ts of
 		Nothing -> error "Unterminated sequence"
-		Just(lv,more) -> ordered (n+1) ((Prim$NUM n,lv):acc) more
+		Just(lv,more) -> ordered (n+1) ((SPRIM$NUM n,lv):acc) more
 	named acc [] = error "unterminated sequence"
 	named acc (TEND:ts) = (mktable acc,ts)
 	named acc (TSEP:ts) = error "unexpected ="
@@ -83,22 +75,22 @@ parseSeq toks = ordered 0 [] toks where
 		(Just(k,[]),Just(v,remain)) -> named ((k,v):acc) remain
 		_ -> error "wat"
 	named acc _ = error "ordered elements may not follow named ones"
-	mktable acc = Tbl acc
+	mktable acc = STBL acc
 
-qtbl = Tbl . zip (map (Prim . NUM) [0..])
-quote e = qtbl [Prim$STR$"quote",e]
+qtbl = STBL . zip (map (SPRIM . NUM) [0..])
+quote e = qtbl [SPRIM$STR$"quote",e]
 
 parse1 toks = case toks of
 	[] -> Nothing
 	(TEND:_) -> error "Unexpected sequence terminator"
 	(TSEP:_) -> error "Unexpected separator"
 	(TBEGIN:ts) -> Just(parseSeq ts)
-	(TPrim T:ts) -> Just(Prim T,ts)
-	(TPrim F:ts) -> Just(Prim F,ts)
-	(TPrim NIL:ts) -> Just(Prim NIL,ts)
-	(TPrim(STR s):ts) -> Just(quote$Prim$STR s,ts)
-	(SYM s:ts) -> Just(Prim$STR s,ts)
-	(TPrim(NUM s):ts) -> Just(Prim$NUM s,ts)
+	(TPrim T:ts) -> Just(SPRIM T,ts)
+	(TPrim F:ts) -> Just(SPRIM F,ts)
+	(TPrim NIL:ts) -> Just(SPRIM NIL,ts)
+	(TPrim(STR s):ts) -> Just(quote$SPRIM$STR s,ts)
+	(SYM s:ts) -> Just(SPRIM$STR s,ts)
+	(TPrim(NUM s):ts) -> Just(SPRIM$NUM s,ts)
 
 tokenize1 s = case s of
 	[] -> Nothing
@@ -116,7 +108,7 @@ tokenize1 s = case s of
 stream p s = case p s of {Nothing->[]; Just(t,s')->t:stream p s'}
 tokenize = stream tokenize1
 parse = stream parse1
-read = parse . tokenize
-read1 x = case Sexp.read x of {[]->Prim NIL; (t:ts)->t}
-read1_ x = case Sexp.read x of {[t]->Just t; _->Nothing}
-rpl = interact $ concat . map show . Sexp.read
+sread = parse . tokenize
+sread1 x = case sread x of {[]->SPRIM NIL; (t:ts)->t}
+sread1_ x = case sread x of {[t]->Just t; _->Nothing}
+rpl = interact $ concat . map show . sread

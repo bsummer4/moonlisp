@@ -4,15 +4,11 @@ TODO Improve Lua Code Generation
 
 TODO The REPL chokes on parens in string literals.
 TODO Possibly merge SET and ASSIGN in the IR.
-TODO Restructure the code.
-	One big source file containing all the representations.
-	One source file per transformation.
-
 TODO Write a JS code-representation.
 TODO Get a working Javascript REPL using the primitive representation.
 TODO Add a compiler from IR to Javascript.
 TODO Add a compiler from IR to Python.
-TODO Add features to IR.hs
+TODO Add features to the IR
 	Basic looping constructs.
 	Pattern matching.
 	String-based and function-based FFIs.
