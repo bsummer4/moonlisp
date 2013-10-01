@@ -1,47 +1,67 @@
 # Moonlisp
 This is a simple lisp implementation that uses tables and strings instead of
-lists and symbols as it's core data structures. It compiles to readable Lua,
+lists and symbols as it's core data structures. It compiles Lua and Javascript.
 Python, and Javascript.
 
 ## Semantics
-S-expression syntax:
-	(1 2 3 a=4 b=5)
-	Keys must be primitive data structures.
-	Quoting is ignored for keys.
-		(''''a=b) means (a=b)
-	Table constructor syntax:
-		{a=b c=d} means `(a=,b c=,d)
-	Strings are the same things as quoted symbols.
-		(== 'hi “hi”)
-	Notice, that there are NO SYMBOLS OR LISTS.
-		Instead, we use tables and strings for everything.
+Types: t ::= nil, bool, func, str, num, foreign, and table.
+All functions are of the form t→t.
+Tables are mutable and map from t→t.
+All values are immutable besides tables and foreigns.
 
-Functions:
-	All functions take a single, array argument.
-	All functions return a single value.
-	Use ffi functions to access language specific features.
-		These functions are "lua", "py", and "js".
-		For example,
-			“(lua fn args)” will return an array since lua functions
-				can return multiple values.
-			In “(py fn args)”, args may include named values
-				since python supports keyword arguments.
+## Basic Syntax
+Syntax for atomic data structures:: #nil #true #false str <str> 4.5
+Quoting:: 'atom "string" “string”
+Syntactic forms:: (foo bar a=b)
+Table literals:: {foo bar a=b}
+Function calls:: [foo bar zaz a=b] (this passes {bar zaz a=b} to foo)
+Keys in ‘key=val’ forms must be atomic data structures.
 
-There is non statement/expression separation.
-	Every "block" expression returns the value returned by the last
-		expression that it contains.
-
-Lisp forms:
-	(exp exp ...)
-	(λ (args ...) body ...)
+Basic lisp forms:
+	(λ arg exp ...)
 	(do exp ...)
-	(match ((pattern ...) exp) body ...)
-	(← var exp)
 	(quote exp)
-	(if exp ifexp elseexp)
+	(match exp (pattern exp ...) ...)
 
-Pattern-matching examples:
-	(match ((a b k=c) {1 2 k=3}) (write a b c))
-	(match (e {1 2 k=3}) (write e))
-	(define (hello a b k=c) (write a b c))
-	(hello 1 2 k=3)
+Syntactic Sugar
+	a.b → [. a b] → a[b]
+	'a → (quote a)
+	(def a b) more ... → (match b (a more ...))
+	(defs (a b) (c d)) more ... → (match {b d} ({a c} more ...))
+	(let ((a b) (c d)) body ...) → (match {b d} ({a c} body ...))
+
+## Supported Operations
+.      :: [table t] → t         -- Table lookup
+!      :: [table t t] → nil     -- Table mutation
+apply  :: func → table → t      -- Method binding
+keys   :: [table] → table       -- Table keys
+#      :: [table] → num         -- Array length
+append :: [table table] → table -- Array concatenation
+read   :: string → t            -- Read data expression.
+write  :: t → string            -- Write data expression.
++      :: [num num] → num
+-      :: [num num] → num
+*      :: [num num] → num
+/      :: [num num] → num
+%      :: [num num] → num
+^      :: [num num] → num
+==     :: [t t] → bool          -- Equality
+~=     :: [num num] → bool
+<=     :: [num num] → bool
+>=     :: [num num] → bool
+<      :: [num num] → bool
+>      :: [num num] → bool
+..     :: [str str] → str       -- Concatenation.
+lua    :: [str t ...] → func    -- Foreign function interface
+js     :: [str t ...] → func    -- Foreign function interface
+
+## Foreign Function Interface
+(lua "print(%1+%2)" 1 2) -> 3
+(js "console.log(%1)" "hi")
+
+## Examples
+### Pattern-matching examples:
+(match {1 2 k=c} ({a b k=c} [write a b c]))
+(match {1 2 k=3} (e [write e]))
+(define (hello a b k=c) [write a b c])
+(hello 1 2 k=3)

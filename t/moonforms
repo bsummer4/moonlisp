@@ -1,13 +1,13 @@
 (← a "testestest")
-(print "--" "x")
-(do (print "--" "x"))
-(λ(x) (print "--" x))
-(← p (λ(x) (print "--" x)))
-(p a)
-(do (p 3) (p #t) (p #f) (p #nil))
-(← t (λ(x y) (λ(z) y)))
-(p ((t "x" "y") "z"))
-(p (((λ(x y) (λ(z) y)) "x" "y") "z"))
-(← aa (if #nil #f #t))
-(← bb (if #t #nil #f))
-((. os "exit"))
+[print "--" "x"]
+(do [print "--" "x"])
+(λ{x} [print "--" x])
+(← p (λ{x} [print "--" x]))
+[p a]
+(do [p 3] [p #t] [p #f] [p #nil])
+(def t (λ{x y} (λ{z} y)))
+[p [[t "x" "y"] "z"]]
+(p [[(λ(x y) (λ(z) y)) "x" "y"] "z"]]
+(def aa (if #nil #f #t))
+(def bb (if #t #nil #f))
+(os.exit)
