@@ -33,16 +33,24 @@ instance ToCodeGen JStmt where
 	cg (JBREAK) = semi $ atom "break"
 	cg (JCONTINUE) = semi $ atom "continue"
 
-dotcall context f args = binop f ".call" $ paren(context:args)
-call obj k args = jux (binop obj "." k) $ paren args
+dotcall f args = binop f ".call" $ paren args
+jsbind o k = block (pre,post) [code] where
+	pre = "function(){return("
+	post = ")}"
+	code = binop meth ".apply" $ paren args
+	meth = (cg (JDOT o k))
+	args = [cg o, jux (atom "cons") (paren[atom "this", atom "arguments"])]
 
 instance ToCodeGen JExp where
 	cg (JPRIM p) = cg p
-	cg (JCALL f es) = dotcall (atom "null") (cg f) (map cg es)
-	cg (JBIND obj k) = jux (atom "$") (paren[cg obj,cg k])
+	cg (JCALL f es) = dotcall (cg f) (map cg es)
+	cg (JBIND obj k) = jsbind obj k
 	cg (JVAR v) = cg v
-	cg (JΛ as b) = (blockexp("function"++args++"{","}") (map cg b)) where
+	cg (JΛ [] b) = blockexp ("function(){", "}") (map cg b)
+	cg (JΛ (a:as) b) = blockexp("function"++args++"{", "}")(dec:ass:map cg b)where
 		args = gen $ paren $ map (atom.validateID) as
+		dec = cg $ JLOCAL $ JVar a
+		ass = cg $ JEXP $ JASSIGN (JVar a) (JVAR (JVar "this"))
 	cg (JDOT a b) = jux (cg a) (brak[cg b])
 	cg (JTABLE forms) = tbl where
 		tbl = (\x->(CExp Unsafe x)) $ CTUPLE ("{","}") $ map unpair forms
