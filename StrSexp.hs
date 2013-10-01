@@ -36,7 +36,10 @@ mksym "#f" = TPrim F
 mksym "#nil" = TPrim NIL
 mksym "#" = SYM "#"
 mksym ('#':s) = error $ "Invalid hash pattern: " ++ show ('#':s)
-mksym s = case (reads s) of { [(d,[])]->TPrim$NUM d; []->SYM s }
+mksym s = case (reads s) of
+	[(d,[])] -> TPrim$NUM d
+	[(_,_:_)] -> error $ "Invalid number: " ++ show s
+	[] -> SYM s
 
 lreadSym sym [] = (mksym $ reverse sym, [])
 lreadSym sym (c:cs) = if not (c `elem` unsymChars) then lreadSym (c:sym) cs

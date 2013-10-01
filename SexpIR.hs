@@ -1,6 +1,7 @@
 module SexpIR(sexpIR) where
 import IRs
 import Util
+import Data.List
 
 getArgList (SPRIM _) = error "invalid argument list."
 getArgList (STBL t) = case arrayNotArray t of
@@ -27,7 +28,20 @@ tblExp a p = ITBL $ (zip (map NUM [1..]) (map sexpIR a)) ++ (primify p)
 quoteExp (SPRIM p) = IPrim p
 quoteExp (STBL t) = ITBL $ primify t
 
-sexpIR (SPRIM (STR s)) = IVAR s
+split f s = r [] (break f s) where
+	r acc (pre,[sep]) = reverse ([]:pre:acc)
+	r acc (pre,sep:after) = r (pre:acc) (break f after)
+	r acc ([],[]) = reverse acc
+	r acc (pre,[]) = reverse(pre:acc)
+
+strOrNum s = case maybeRead s :: Maybe Double of {Just n->NUM n; Nothing->STR s}
+ivar s = case split (=='.') s of
+	["",""] -> IVAR "."
+	[s] -> IVAR s
+	[] -> error "wut"
+	(v:ks) -> getExp $ IVAR v : map (IPrim . strOrNum) ks
+
+sexpIR (SPRIM (STR s)) = ivar s
 sexpIR (SPRIM x) = IPrim x
 sexpIR (STBL t) = case arrayNotArray t of
 	((SPRIM(STR "do")):body,[]) -> IDO (map sexpIR body)

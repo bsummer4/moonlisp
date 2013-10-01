@@ -1,4 +1,5 @@
-module Repl(repl,maybeRead) where
+module Repl(repl) where
+import Util
 import Data.IORef
 import System.IO
 import System.IO.Error
@@ -38,7 +39,6 @@ getWordForm b acc = getc b >>= \c -> case classify c of
 	WordCh -> getWordForm b (c:acc)
 	_ -> ungetc b c >> (return $ reverse acc)
 
-maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
 repl init f = do
 	init
 	b <- newBuf

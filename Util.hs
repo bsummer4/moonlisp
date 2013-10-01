@@ -3,6 +3,7 @@ import IRs
 import Data.List
 
 -- Atom Operations
+maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
 isInt n = n == ((fromIntegral $ truncate n) :: Double)
 writeNum n = if isInt n then show(truncate n) else show n
 arrayNotArray a = r 0 ([],[]) (sort a) where

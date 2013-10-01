@@ -8,10 +8,11 @@ TODO The Code Generation stuff is starting to suck.
 
 TODO The REPL chokes on parens in string literals.
 TODO Possibly merge SET and ASSIGN in the IR.
+TODO Move the implementation of dot-syntax into the s-expresion parser.
+	Right now, a.b is parsed as a symbol and then translated into (. a "b")
+		when we convert from s-expressions into the internal representation.
+
 TODO Add some syntactic sugar
-		TODO a.b → (. a "b")
-		TODO a.b.c → (. (. a "b") "c")
-		TODO (a.b b.c) → ((. a "b") (. b "c"))
 		TODO {1 2 3 a=b} → (tbl 1 2 3 a=b)
 		TODO 'x → (quote x)
 		TODO `x → (quasiquote x)

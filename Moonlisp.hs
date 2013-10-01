@@ -12,7 +12,6 @@ import Repl
 import System.IO
 import System.Environment
 
-maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
 lua = map (gen.luaCG) . irLua
 js = map (gen.jsCG) . irJS
 compile lang = concat . intersperse "\n" . lang . retimplicit . sexpIR
