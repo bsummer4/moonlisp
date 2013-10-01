@@ -13,6 +13,7 @@ getArgList (STBL t) = case arrayNotArray t of
 setExp [] = error "Can't set nothing"
 setExp [_] = error "Set it to what?"
 setExp [(IVAR s),e] = IASSIGN s e
+setExp [(IGET a k),e] = ISET a k e
 setExp [_,e] = error "invalid set"
 setExp [t,k,v] = ISET t k v
 setExp (t:k:remain) = setExp (IGET t k : remain)

@@ -1,0 +1,8 @@
+(← bound (λ(obj n) ((. obj n "bind") obj)))
+(← w (bound document "write"))
+(← mkdom (bound document "createElement"))
+(← gid (bound document "getElementById"))
+(← append (λ(x c) (x.appendChild c) x))
+(← setText (λ(x t) (← x.innerText t) x))
+(w “<div id="sup">sup</div>”)
+(append (gid "sup") (setText (mkdom "span") " span"))

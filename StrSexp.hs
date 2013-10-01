@@ -5,7 +5,8 @@ import Data.List
 
 (t,f,n) = (SPRIM T, SPRIM F, SPRIM NIL)
 data OneOrTwo a = Two a a | One a
-data Tok = TSEP | SYM String | TPrim Atom | TBEGIN | TEND deriving (Eq,Ord,Show,Read)
+data Tok = TSEP | SYM String | TPrim Atom | TBEGIN | TEND
+	deriving (Eq,Ord,Show,Read)
 
 -- TODO Make invalid strings impossible to represent.
 --  Any string read with ‘read’ should be outputed correctly. However,
