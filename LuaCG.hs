@@ -33,7 +33,7 @@ instance ToCG LStmt where
 
 brak a = tuple ("[","]") [a]
 instance ToCG LExp where
-	cg (LPrim p) = cg p
+	cg (LPRIM p) = cg p
 	cg (LCALLEXP f) = cgcall f
 	cg (LVAR v) = cg v
 	cg (LΛ as b) = (blockexp("function"++args,"end") (map cg b)) where

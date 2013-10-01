@@ -33,9 +33,13 @@ instance ToCodeGen JStmt where
 	cg (JBREAK) = semi $ atom "break"
 	cg (JCONTINUE) = semi $ atom "continue"
 
+dotcall context f args = binop f ".call" $ paren(context:args)
+call obj k args = jux (binop obj "." k) $ paren args
+
 instance ToCodeGen JExp where
-	cg (JPrim p) = cg p
-	cg (JCALL(f,es)) = jux (cg f) (tuple ("(",")") $ map cg es)
+	cg (JPRIM p) = cg p
+	cg (JCALL f es) = dotcall (atom "null") (cg f) (map cg es)
+	cg (JBIND obj k) = jux (atom "$") (paren[cg obj,cg k])
 	cg (JVAR v) = cg v
 	cg (JΛ as b) = (blockexp("function"++args++"{","}") (map cg b)) where
 		args = gen $ paren $ map (atom.validateID) as

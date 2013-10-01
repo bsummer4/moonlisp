@@ -24,7 +24,7 @@ data CExp1
 --  Since we can't support arbitrary ‘return’ statments, this should not
 --  be allowed in this ADT.
 data IExp
-	= IPrim Atom
+	= IPRIM Atom
 	| IVAR String
 	| ICALL IExp [IExp]
 	| IΛ [String] IExp
@@ -40,7 +40,7 @@ data IExp
 -- Lua Representation
 data LVar = LTMP | LVar String | LTVar LExp LExp deriving (Show,Read)
 data LExp
-	= LPrim Atom
+	= LPRIM Atom
 	| LCALLEXP (LExp,[LExp])
 	| LVAR LVar
 	| LΛ [String] [LStmt]
@@ -62,8 +62,9 @@ data LStmt
 -- Javascript Representation
 data JVar = JTMP | JVar String | JTVar JExp JExp deriving (Show,Read)
 data JExp
-	= JPrim Atom
-	| JCALL (JExp,[JExp])
+	= JPRIM Atom
+	| JCALL JExp [JExp]
+	| JBIND JExp JExp
 	| JVAR JVar
 	| JΛ [String] [JStmt]
 	| JDOT JExp JExp

@@ -21,4 +21,10 @@ chooseLang ["lua"] = lua
 chooseLang ["js"] = js
 chooseLang _ = error "Invalid arguments"
 main = getArgs >>= go.chooseLang where
-	go lang = repl (return()) $ fmap (compile lang) . sread1_
+	go lang = repl jslib $ fmap (compile lang) . sread1_
+
+jslib = putStrLn $ unlines [
+	  "function $(obj,k) {"
+	, " return function() {"
+	, "  return obj[k].apply(obj,Array.apply(null,arguments)); }};"
+	]

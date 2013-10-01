@@ -26,7 +26,7 @@ primify [] = []
 primify ((SPRIM p,e):more) = (p,sexpIR e) : primify more
 primify (_:more) = error "Keys in table-literals may not be tables themselves."
 tblExp a p = ITBL $ (zip (map NUM [1..]) (map sexpIR a)) ++ (primify p)
-quoteExp (SPRIM p) = IPrim p
+quoteExp (SPRIM p) = IPRIM p
 quoteExp (STBL t) = ITBL $ primify t
 
 split f s = r [] (break f s) where
@@ -40,10 +40,10 @@ ivar s = case split (=='.') s of
 	["",""] -> IVAR "."
 	[s] -> IVAR s
 	[] -> error "wut"
-	(v:ks) -> getExp $ IVAR v : map (IPrim . strOrNum) ks
+	(v:ks) -> getExp $ IVAR v : map (IPRIM . strOrNum) ks
 
 sexpIR (SPRIM (STR s)) = ivar s
-sexpIR (SPRIM x) = IPrim x
+sexpIR (SPRIM x) = IPRIM x
 sexpIR (STBL t) = case arrayNotArray t of
 	((SPRIM(STR "do")):body,[]) -> IDO (map sexpIR body)
 	((SPRIM(STR "do")):_,_) -> error "invalid do statement."
@@ -61,4 +61,4 @@ sexpIR (STBL t) = case arrayNotArray t of
 	([SPRIM(STR "quote"),e],[]) -> quoteExp e
 	(_,(_:_)) -> error "Functions may only take ordered arguments."
 	(fn:args,[]) -> (ICALL (sexpIR fn) (map sexpIR args))
-	([],[]) -> IPrim NIL
+	([],[]) -> IPRIM NIL

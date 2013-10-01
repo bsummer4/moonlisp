@@ -5,7 +5,7 @@ import Data.List
 
 (t,f,n) = (SPRIM T, SPRIM F, SPRIM NIL)
 data OneOrTwo a = Two a a | One a
-data Tok = TSEP | SYM String | TPrim Atom | TBEGIN | TEND
+data Tok = TSEP | SYM String | TPRIM Atom | TBEGIN | TEND
 	deriving (Eq,Ord,Show,Read)
 
 -- TODO Make invalid strings impossible to represent.
@@ -32,13 +32,13 @@ unsymChars = "()[]{}“” \t\n\r"
 wsChars = " \n\t"
 todo() = error "TODO"
 
-mksym "#t" = TPrim T
-mksym "#f" = TPrim F
-mksym "#nil" = TPrim NIL
+mksym "#t" = TPRIM T
+mksym "#f" = TPRIM F
+mksym "#nil" = TPRIM NIL
 mksym "#" = SYM "#"
 mksym ('#':s) = error $ "Invalid hash pattern: " ++ show ('#':s)
 mksym s = case (reads s) of
-	[(d,[])] -> TPrim$NUM d
+	[(d,[])] -> TPRIM$NUM d
 	[(_,_:_)] -> error $ "Invalid number: " ++ show s
 	[] -> SYM s
 
@@ -52,12 +52,12 @@ lreadDelimSym = r "" where
 	r acc [] = error "Unexpected EOF"
 
 lreadDumbStr = r "" where
-	r acc ('"':more) = (TPrim$STR$reverse acc, more)
+	r acc ('"':more) = (TPRIM$STR$reverse acc, more)
 	r acc (c:more) = r (c:acc) more
 	r acc [] = error "Unexpected EOF"
 
 lreadStr = r "" 1 where
-	r str 1 ('”':s) = (TPrim$STR$reverse str,s)
+	r str 1 ('”':s) = (TPRIM$STR$reverse str,s)
 	r str _ [] = error $ "Unterminated string: " ++ (show $ reverse str)
 	r str d ('”':s) = r ('”':str) (d-1) s
 	r str d ('“':s) = r ('“':str) (d+1) s
@@ -90,12 +90,12 @@ parse1 toks = case toks of
 	(TEND:_) -> error "Unexpected sequence terminator"
 	(TSEP:_) -> error "Unexpected separator"
 	(TBEGIN:ts) -> Just(parseSeq ts)
-	(TPrim T:ts) -> Just(SPRIM T,ts)
-	(TPrim F:ts) -> Just(SPRIM F,ts)
-	(TPrim NIL:ts) -> Just(SPRIM NIL,ts)
-	(TPrim(STR s):ts) -> Just(quote$SPRIM$STR s,ts)
+	(TPRIM T:ts) -> Just(SPRIM T,ts)
+	(TPRIM F:ts) -> Just(SPRIM F,ts)
+	(TPRIM NIL:ts) -> Just(SPRIM NIL,ts)
+	(TPRIM(STR s):ts) -> Just(quote$SPRIM$STR s,ts)
 	(SYM s:ts) -> Just(SPRIM$STR s,ts)
-	(TPrim(NUM s):ts) -> Just(SPRIM$NUM s,ts)
+	(TPRIM(NUM s):ts) -> Just(SPRIM$NUM s,ts)
 
 tokenize1 s = case s of
 	[] -> Nothing

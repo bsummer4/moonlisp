@@ -28,11 +28,11 @@ mkstmts e = case e of
 -- lambda expression.
 unstmt s = mkexp $ retimplicit $ IΛ [] s
 mkexp e = case e of
-	IPrim x -> LPrim x
+	IPRIM x -> LPRIM x
 	IVAR s -> LVAR $ LVar s
 	ICALL e args -> LCALLEXP(mkexp e, map mkexp args)
 	IΛ args body -> LΛ args $ mkstmts body
-	ITBL t -> LTABLE $ map f t where f(a,b)=(mkexp(IPrim a),mkexp b)
+	ITBL t -> LTABLE $ map f t where f(a,b)=(mkexp(IPRIM a),mkexp b)
 	IRETURN _ -> error "(return _) can't be used as an expression."
 	IGET t k -> LDOT (mkexp t) (mkexp k)
 	IASSIGN s e -> unstmt e

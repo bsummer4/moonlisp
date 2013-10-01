@@ -10,8 +10,8 @@ import System.IO
 import Repl
 
 irJS = mkstmts
-wrap s = JCALL(fn,[]) where fn = JΛ [] [s]
-wraps ss = JCALL(fn,[]) where fn = JΛ [] ss
+wrap s = JCALL fn [] where fn = JΛ [] [s]
+wraps ss = JCALL fn [] where fn = JΛ [] ss
 mkstmts :: IExp -> [JStmt]
 mkstmts e = case e of
 	IDO ss -> concat $ map mkstmts ss
@@ -31,10 +31,10 @@ jsop _ s _ = error $ "Invalid use of operator " ++ s ++ "."
 jscall e args = case e of
 	IVAR s -> case jsymClass s of
 		JOpN n -> jsop n s args
-		JSId -> JCALL(mkexp e, map mkexp args)
+		JSId -> JCALL (mkexp e) (map mkexp args)
 		JSReserved -> error $ s ++ " is a reserved word in Javascript."
 		JSKeyword -> error $ s ++ " is a keyword in Javascript."
-	e -> JCALL(mkexp e, map mkexp args)
+	e -> JCALL (mkexp e) (map mkexp args)
 
 jsvar s = case jsymClass s of
 	JSId -> JVAR $ JVar s
@@ -44,11 +44,12 @@ jsvar s = case jsymClass s of
 
 mkexp :: IExp -> JExp
 mkexp e = case e of
-	IPrim x -> JPrim x
+	IPRIM x -> JPRIM x
 	IVAR s -> jsvar s
+	ICALL (IVAR ":") [a,b] -> JBIND (mkexp a) (mkexp b)
 	ICALL e args -> jscall e args
 	IΛ args body -> JΛ args $ mkstmts body
-	ITBL t -> JTABLE $ map f t where f(a,b)=(mkexp(IPrim a),mkexp b)
+	ITBL t -> JTABLE $ map f t where f(a,b)=(mkexp(IPRIM a),mkexp b)
 	IRETURN _ -> error "(return _) can't be used as an expression."
 	IASSIGN s e -> JASSIGN (JVar s) (mkexp e)
 	IDO exps -> unstmt e
