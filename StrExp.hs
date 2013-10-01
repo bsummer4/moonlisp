@@ -9,10 +9,6 @@ data Ty = TPAREN | TBRAK | TCURLY deriving (Eq,Ord,Show,Read)
 data Tok = TSEP | SYM String | TATOM Atom | TBEGIN Ty | TEND Ty
 	deriving (Eq,Ord,Show,Read)
 
--- TODO Make invalid strings impossible to represent.
---  Any string read with ‘read’ should be outputed correctly. However,
---  "“" could be constructed by other code which would case invalid output
---  from write.
 showStr s = "“" ++ s ++ "”"
 showSym s = if all (not.(`elem` unsymChars)) s then s else "<" ++ s ++ ">"
 showTbl ty es = r $ arrayNotArray es where
@@ -39,8 +35,6 @@ swrite (MACRO es) = showTbl TPAREN es
 
 unsymChars = "#=()[]{}“” \t\n\r"
 wsChars = " \n\t"
-todo() = error "TODO"
-
 mksym "#t" = TATOM T
 mksym "#f" = TATOM F
 mksym "#nil" = TATOM NIL
