@@ -1,4 +1,4 @@
-module IRs where
+module IR where
 
 -- Atomic Data Types
 data Atom = T | F | NIL | STR String | NUM Double deriving(Show,Read,Eq,Ord)

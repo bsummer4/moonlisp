@@ -1,5 +1,5 @@
 module Util where
-import IRs
+import IR
 import Data.List
 
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}

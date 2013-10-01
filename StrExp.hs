@@ -1,5 +1,5 @@
 module StrExp(sread,sread1,sread1_,swrite) where
-import IRs
+import IR
 import Util
 import Data.List
 
