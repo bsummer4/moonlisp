@@ -22,17 +22,18 @@ data Exp
 
 -- Lower-level representation.
 data LExp
-	= LPRIM Atom
-	| LVAR String
+	= LATOM Atom
+	| LVAR Int
 	| LCALL LExp LExp
-	| Lλ String LStmt
+	| Lλ Int LStmt
 	| LDOT LExp LExp
+	| LEQ LExp LExp
 	| LTABLE(Tbl LExp)
 	deriving (Show,Read)
 
 data LStmt
 	= LDO [LStmt]
-	| LLET String LExp
+	| LLET Int LExp
 	| LIF LExp LStmt LStmt
 	| LSET LExp LExp LExp
 	| LRETURN LExp

@@ -32,6 +32,12 @@ swrite (VAR s) = showSym s
 swrite (DATA es) = showTbl TCURLY es
 swrite (CALL es) = showTbl TBRAK es
 swrite (MACRO es) = showTbl TPAREN es
+swrite (DO es) = error "TODO"
+swrite (Λ a e) = error "TODO"
+swrite (MATCH e pats) = error "TODO"
+swrite (JS es) = error "ffi calls are not implemented."
+swrite (LUA es) = error "ffi calls are not implemented."
+swrite (PY es) = error "ffi calls are not implemented."
 
 unsymChars = "#=()[]{}“” \t\n\r"
 wsChars = " \n\t"
@@ -44,6 +50,7 @@ mksym s = case (reads s) of
 	[(d,[])] -> TATOM$NUM d
 	[(_,_:_)] -> error $ "Invalid number: " ++ show s
 	[] -> SYM s
+	_ -> error "This shouldn't happen."
 
 lreadSym sym [] = (mksym $ reverse sym, [])
 lreadSym sym (c:cs) = if not (c `elem` unsymChars) then lreadSym (c:sym) cs
