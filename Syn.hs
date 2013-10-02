@@ -11,7 +11,7 @@ fromSexp :: SExp -> Exp
 fromSexp (SATOM(STR s)) = VAR s
 fromSexp (SATOM a) = ATOM a
 fromSexp s@(STABLE es) = r(ez es) where
-	r ([],[]) = ATOM NIL
+	r ([],[]) = error "Invalid syntax: ()"
 	r (o,n) = SYNTAX $ tmap fromSexp $ mk o n
 
 mkpattern :: Exp -> Pattern
@@ -29,7 +29,7 @@ fixform e = case e of {SYNTAX t->f(ez t); _ -> error "wut"} where
 transforms :: [(String,[Exp] -> [(Atom,Exp)] -> Exp)]
 transforms = (
 	[ ("str", \[VAR s] [] -> ATOM$STR s)
-	, ("call", \(f:args) [] -> CALL (t f) $ DATA $ tmap t $ mk args [])
+	, ("call", \(f:args) o -> CALL (t f) $ DATA $ tmap t $ mk args o)
 	, ("mkdata", \o n -> DATA $ tmap t $ mk o n)
 	, ("do", \o [] -> DO $ map t o)
 	, ("λ", \[VAR a,body] [] -> Λ a (t body))

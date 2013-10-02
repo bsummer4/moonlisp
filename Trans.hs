@@ -11,11 +11,19 @@ toLStmt = mkstmt emptyNS
 mkstmt :: Namespace -> Exp -> LStmt
 mkstmt ns e = mkdo $ mkstmts ns e
 mkdo [s] = s
-mk ss = DO ss
+mkdo ss = LDO ss
+
+builtins = (
+	[ ".", "!", "apply", "keys", "%", "append", "read", "write", "+"
+	, "-", "*", "/", "%", "^", "=", "~=", "<=", ">=", "<", ">", ".."
+	, "nil?", "bool?", "func?", "str?", "num?", "foreign?", "table?"
+	, "eq", "neq"
+	])
 
 data Namespace = NS Int [String]
-emptyNS = NS 0 []
-wSym (NS i ns) s = (i, NS(i+1)(s:ns))
+nsFromList l = NS (length l) l
+emptyNS = nsFromList builtins
+wSym (NS i ns) s = (i+1, NS(i+1)(s:ns))
 findSym (NS l ns) name = l - idx where
 	idx = case elemIndex name ns of {Just a->a; Nothing->error undef}
 	undef = "Undefined variable: " ++ name
@@ -33,9 +41,10 @@ mkstmts :: Namespace -> Exp -> [LStmt]
 mkstmts ns e = case e of
 	DO es -> concat $ map (mkstmts ns) es
 	MATCH e patterns -> match ns e patterns
-	FFUNC _ -> error "fii is not implemented."
+	FFUNC _ -> error "ffi is not implemented."
 	FSTMT _ -> error "ffi is not implemented."
 	SYNTAX s -> error "toLExp expects to be run after unsyntax."
+	RETURN e -> [LRETURN $ mkexp ns e]
 	e -> [LLET 0 $ mkexp ns e]
 
 mkexp ns e = case e of

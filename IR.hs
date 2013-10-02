@@ -6,6 +6,7 @@ data SExp = SATOM Atom | STABLE(Tbl SExp) deriving(Show,Eq,Ord)
 data Pattern = PSYM String | PATOM Atom | PTBL(Tbl Pattern)
 	deriving(Show,Eq,Ord)
 
+-- [[WARNING]] ‘RETURN’ is for internal use only! [[WARNING]]
 data Exp
 	= ATOM Atom
 	| VAR String
@@ -17,6 +18,7 @@ data Exp
 	| SYNTAX (Tbl Exp)
 	| FFUNC String
 	| FSTMT String
+	| RETURN Exp
 	deriving(Show,Eq,Ord)
 
 -- Lower-level representation.
@@ -25,8 +27,6 @@ data LExp
 	| LVAR Int
 	| LCALL LExp LExp
 	| Lλ Int LStmt
-	| LDOT LExp LExp
-	| LEQ LExp LExp
 	| LTABLE(Tbl LExp)
 	deriving (Show)
 
@@ -34,7 +34,6 @@ data LStmt
 	= LDO [LStmt]
 	| LLET Int LExp
 	| LIF LExp LStmt LStmt
-	| LSET LExp LExp LExp
 	| LRETURN LExp
 	deriving (Show)
 

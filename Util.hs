@@ -1,5 +1,5 @@
 module Util where
-import qualified Prim
+import Prim
 import IR
 import Data.List
 
@@ -27,8 +27,8 @@ gen c = r 0 c where
 	r i (CExp _ (CTUPLE(pre,post) mid)) = genTuple i pre post mid
 	r i (CExp _ (CBINOP a sep b)) = r i a ++ sep ++ r i b
 	r i (CExp _ (CTRIOP a sep1 b sep2 c)) = r i a ++ sep1 ++ r i b ++ sep2 ++ r i c
-	r i (CExp _ (CBLOCK(pre,post) mid@[CExp _(CBLOCK _ _)])) = genBlk i pre post mid
-	r i (CExp _ (CBLOCK(pre,post) [s])) = pre ++ r i (space s) ++ post
+--	r i (CExp _ (CBLOCK(pre,post) mid@[CExp _(CBLOCK _ _)])) = genBlk i pre post mid
+--	r i (CExp _ (CBLOCK(pre,post) [s])) = pre ++ r i (space s) ++ post
 	r i (CExp _ (CBLOCK(pre,post) mid)) = genBlk i pre post mid
 	r i (CExp _ (CSEMI c)) = r i c ++ ";"
 
@@ -54,3 +54,19 @@ jux a (CExp Unsafe b) = jux a (delim $ CExp Unsafe b)
 jux (CExp Space a) (CExp Space b) =
 	CExp Space $ CBINOP (CExp Space a) " " (CExp Space b)
 jux a b = CExp Space $ CBINOP a "" b
+
+retimplicit :: Exp -> Exp
+retimplicit p = r p where
+	r (Λ args body) = Λ args (blk body)
+	r (CALL f a) = CALL (r f) (r a)
+	r (DO es) = DO (map r es)
+	r (DATA forms) = DATA(tmap r forms)
+	r (MATCH e ps) = MATCH (r e) $ map pat ps where pat(p,e)=(p,r e)
+	r (RETURN a) = RETURN $ r a
+	r e@(ATOM _) = e
+	r e@(VAR _) = e
+	pat (p,e) = (p, r e)
+	blk e@(DO[]) = e
+	blk (DO es) = case reverse es of last:before->DO $ reverse(blk last:before)
+	blk e@(RETURN _) = e
+	blk e = RETURN(retimplicit e)
