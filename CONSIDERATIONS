@@ -5,3 +5,35 @@ We compile statements into expressions like this:
 Any return statements inside of STMT will expect to return to the surrounding
 	block, but they will not. Since there is no way around this, we cannot
 	support return statements.
+
+## Implementing Pattern Matching on Tables.
+Let's just support variable-free table literals first.
+	For example: {1 2 b=3}
+	Process?
+		Check if the table has the correct size.
+			How do we do that using only Moonlisp built-ins?
+				(= 3 [# [keys t]])
+		For each key in the pattern, check if the value in the table matches.
+			(and (= 1 (. t 1)) (= 2 (. t 2)) (= 3 t.b))
+	TODO Since having a nil value is allowed in lua, we need to disallow it
+		from table-matching patterns.
+			TODO Also, we should probably disallow them in function
+				calls and possibly in syntax as well. This
+					needs to be thought through carefully.
+
+Alright, cool. Now, how do we bind variables in table-patterns?
+	Let's look just at flat tables first.
+		Whatever process we come up with, we should be able to just do it
+			recursively for nested ones.
+	He's an example table {1 b 3}
+	We can divide the table into two parts, parts to match, and parts to
+		assign to variables.
+	Then we have four steps:
+		First, check all the literal values.
+		Second, check to make that values exist for all variable-patterns.
+		Third, bind all of these table values to local variables.
+		Fourth, Generate the associated code.
+
+Alright, now for nested table patterns.
+	If we just do each of the first three steps above recursively, we'll
+	have all of our checks and binds done correctly.
