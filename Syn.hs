@@ -2,7 +2,7 @@ module Syn(fromSexp,unsyntax) where
 import Prim
 import IR
 import Util
-import StrSExp
+import Read
 
 unsyntax :: Exp -> Exp
 unsyntax = t

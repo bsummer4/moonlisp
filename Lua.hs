@@ -1,6 +1,7 @@
 module Lua(luaCG) where
+import Prim
 import IR
-import StrSExp
+import Read
 import Util
 import Data.List
 import Repl
@@ -31,7 +32,7 @@ instance ToCG LExp where
 	cg (Lλ a s) = (blockexp("function("++var a++")","end") [cg s])
 	cg (LDOT a b) = jux (cg a) (brak[cg b])
 	cg (LEQ a b) = binop (cg a) "==" (cg b)
-	cg (LTABLE forms) = (\x->(CExp Unsafe x)) $ CTUPLE ("{","}") $ map unpair forms where
+	cg (LTABLE forms) = (\x->(CExp Unsafe x)) $ CTUPLE ("{","}") $ map unpair (toList forms) where
 		unpair (a,b) = binop (brak[cg a]) "=" (cg b)
 
 keywords =

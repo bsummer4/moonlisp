@@ -1,4 +1,4 @@
-module StrSExp(sread,sread1,sread1_,swrite) where
+module Read(sread,sread1,sread1_,swrite) where
 import Prim
 import IR
 import Util
