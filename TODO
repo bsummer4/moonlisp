@@ -1,27 +1,29 @@
+# Get a primitive compile working, and stable.
 TODO Using duplicate keys in a table should be a syntax error.
-TODO Improve Lua Code Generation
-	TODO String output uses Haskell, not lua lexical syntax.
-
-TODO The Code Generation stuff is starting to suck.
+TODO Lut code generator doesn't output strings correctly in all cases.
+TODO The Code Generation (CExp) stuff is starting to suck.
 	Once we get everything working, this needs to be rewritten to
 		cleanly handle all cases.
 
 TODO The REPL chokes on parens in string literals.
-TODO Possibly merge SET and ASSIGN in the IR.
-TODO Move the implementation of dot-syntax into the s-expresion parser.
-	Right now, a.b is parsed as a symbol and then translated into (. a "b")
-		when we convert from s-expressions into the internal representation.
-
-TODO Add some syntactic sugar
-		TODO {1 2 3 a:b} → (tbl 1 2 3 a:b)
-
-TODO Add a compiler from IR to Python.
-TODO Add support for basic looping constructs.
-TODO Add support for pattern matching.
+TODO Implement ‘match’.
 	TODO Implement single-variable let-forms in the IR.
 	TODO First implement a simple switch statement on atomic values.
 		Add support to the IR.
 			Compile down to if-else chains for now.
 	TODO Generalize the IR
-TODO Implement the ‘lua’ special form for accepting multiple return values.
-TODO Implement r5rs-style ‘syntax-case’ macros
+
+TODO Implement ‘def’:: (def x y) ... → (match y (x ...))
+TODO Implement foreign-syntax and foreign-function.
+TODO Write the standard library for Lua.
+TODO Write the command line interface code.
+TODO Write backends for Python and Javascript.
+TODO Write a standard library for Python.
+TODO Write a standard library for Javascript.
+TODO Test cases.
+TODO Quickcheck.
+
+# Add some important features.
+Scheme (r5rs) style macros.
+Implement some nice syntactic-sugar as a macro library.
+Basic optimizations: inlining, proper tail calls
