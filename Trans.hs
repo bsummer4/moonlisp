@@ -7,7 +7,7 @@ import Data.List
 import System.IO
 
 toLStmt :: Exp -> LStmt
-toLStmt = mkstmt emptyNS
+toLStmt e = mkstmt emptyNS e
 mkstmt :: Namespace -> Exp -> LStmt
 mkstmt ns e = mkdo $ mkstmts ns e
 mkdo [s] = s
@@ -28,32 +28,65 @@ findSym (NS l ns) name = l - idx where
 	idx = case elemIndex name ns of {Just a->a; Nothing->error undef}
 	undef = "Undefined variable: " ++ name
 
-match ns e ps = [LLET 0 $ LATOM $ NUM 0]
--- mklet (i,syms) e = LLET i $ mkexp (i+1,"":syms) e
+eq :: LExp -> LExp -> LExp
+eq a b = LCALL (LVAR $ findSym emptyNS "=") (LTABLE $ mk [a,b] [])
 
+match :: Namespace -> Exp -> [(Pattern,Exp)] -> [LStmt]
+match ns e [] = [LLET 0 $ mkexp ns e]
+match ns e pats = (LLET swvar $ mkexp ns e):ifs pats where
+	(swvar,ns') = wSym ns ""
+	ifs :: [(Pattern,Exp)] -> [LStmt]
+	ifs [] = []
+	ifs ((p,s):more) = case p of
+		PSYM v -> LLET casevar (LVAR swvar) : mkstmts ns'' s where
+			(casevar,ns'') = wSym ns' v
+		PATOM a -> [LIF c (mkstmt ns' s) (mkdo $ ifs more)] where
+			c = (eq (LVAR swvar) (LATOM a))
+		PTBL _ -> error "Pattern matching is not yet supported."
+
+-- Pattern ::= PSYM PATOM PTBL
 -- exp ::= ATOM VAR DO Λ MATCH CALL DATA SYNTAX FFUNC FSTMT
 -- lstmt ::= LLET DO IF SET RETURN
 -- lexp ::= LATOM LVAR LCALL Lλ LDOT LEQ
-
-wrap :: LStmt -> LExp
-wrap e = LCALL (Lλ 0 $ e) (LATOM NIL)
+-- unstmt s = mkexp $ retimplicit $ IΛ [] s
+unstmt :: Namespace -> LStmt -> LExp
+-- unstmt ns s = mkexp ns $ retimplicit $ Λ "" s
+unstmt ns s = LCALL (Lλ 0 $ s) (LATOM NIL)
 mkstmts :: Namespace -> Exp -> [LStmt]
 mkstmts ns e = case e of
-	DO es -> concat $ map (mkstmts ns) es
 	MATCH e patterns -> match ns e patterns
+	DO es -> concat $ map (mkstmts ns) es
 	FFUNC _ -> error "ffi is not implemented."
 	FSTMT _ -> error "ffi is not implemented."
 	SYNTAX s -> error "toLExp expects to be run after unsyntax."
 	RETURN e -> [LRETURN $ mkexp ns e]
 	e -> [LLET 0 $ mkexp ns e]
 
+mkexp :: Namespace -> Exp -> LExp
 mkexp ns e = case e of
+	MATCH e patterns -> LCALL (Lλ 0 $ mkdo $ match ns e patterns) (LATOM NIL)
 	ATOM a -> LATOM a
 	VAR v -> LVAR (findSym ns v)
 	Λ v e -> case wSym ns v of (vi,ns') -> Lλ vi $ mkstmt ns' e
 	CALL f a -> LCALL (mkexp ns f) (mkexp ns a)
 	DATA d -> LTABLE $ tmap (mkexp ns) d
-	s -> wrap $ mkstmt ns s
+	s -> unstmt ns $ mkstmt ns e
+
+retimplicit :: Exp -> Exp
+retimplicit p = r p where
+	r (Λ args body) = Λ args (blk body)
+	r (CALL f a) = CALL (r f) (r a)
+	r (DO es) = DO (map r es)
+	r (DATA forms) = DATA(tmap r forms)
+	r (MATCH e ps) = MATCH (r e) $ map pat ps where pat(p,e)=(p,r e)
+	r (RETURN a) = RETURN $ r a
+	r e@(ATOM _) = e
+	r e@(VAR _) = e
+	blk e@(DO[]) = e
+	blk (MATCH e ps) = MATCH (r e) $ map pat ps where pat(p,e)=(p,blk e)
+	blk (DO es) = case reverse es of last:before->DO $ reverse(blk last:before)
+	blk e@(RETURN _) = e
+	blk e = RETURN(retimplicit e)
 
 --irLua = mkstmts
 --wrap s = LCALLEXP(fn,[]) where fn = LΛ [] [s]

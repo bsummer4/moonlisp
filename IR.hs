@@ -28,14 +28,14 @@ data LExp
 	| LCALL LExp LExp
 	| Lλ Int LStmt
 	| LTABLE(Tbl LExp)
-	deriving (Show)
+	deriving (Show,Eq,Ord)
 
 data LStmt
 	= LDO [LStmt]
 	| LLET Int LExp
 	| LIF LExp LStmt LStmt
 	| LRETURN LExp
-	deriving (Show)
+	deriving (Show,Eq,Ord)
 
 -- Code Generation
 data CExp = CExp DelimTy CExp1 deriving (Show)
