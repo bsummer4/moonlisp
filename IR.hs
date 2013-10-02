@@ -3,6 +3,7 @@ module IR where
 -- Atomic Data Types
 data Atom = T | F | NIL | STR String | NUM Double deriving(Show,Read,Eq,Ord)
 type Tbl a = [(Atom,a)]
+data SExp = SATOM Atom | STABLE(Tbl SExp) deriving(Show,Read,Eq,Ord)
 data Pattern = PSYM String | PATOM Atom | PTBL(Tbl Pattern)
 	deriving(Show,Read,Eq,Ord)
 
@@ -17,7 +18,7 @@ data Exp
 	| PY String
 	| CALL(Tbl Exp)
 	| DATA(Tbl Exp)
-	| MACRO(Tbl Exp)
+	| SYNTAX(Tbl Exp)
 	deriving(Read,Show,Eq,Ord)
 
 -- Lower-level representation.

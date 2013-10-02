@@ -25,9 +25,11 @@ Primitive lisp forms:
 	(do exp ...)
 
 Foreign function calls:
-	(lua "print(%1+%2)")
-	(js "console.log(%1+%2)")
-	(py "print(%1+%2)")
+	#[require io]
+	#[io.write("foreign code")]
+	(#(io.write(%1)) "foreign function call")
+	(def output #(io.write(%1)))
+	(output "foreign function call")
 
 Patterns are just data-literals mixed with symbols::
 	(match {1 {2} 3} ({1 b c} {b c}))

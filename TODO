@@ -13,10 +13,7 @@ TODO Move the implementation of dot-syntax into the s-expresion parser.
 		when we convert from s-expressions into the internal representation.
 
 TODO Add some syntactic sugar
-		TODO {1 2 3 a=b} → (tbl 1 2 3 a=b)
-		TODO 'x → (quote x)
-		TODO `x → (quasiquote x)
-		TODO ,x → (unquote x)
+		TODO {1 2 3 a:b} → (tbl 1 2 3 a:b)
 
 TODO Add a compiler from IR to Python.
 TODO Add support for basic looping constructs.
