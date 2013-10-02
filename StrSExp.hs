@@ -1,5 +1,5 @@
--- module StrExp(sread,sread1,sread1_,sparse,swrite) where
-module StrExp where
+module StrSExp(sread,sread1,sread1_,swrite) where
+import Prim
 import IR
 import Util
 import Data.List
@@ -7,7 +7,6 @@ import Data.List
 sread :: String -> [SExp]
 sread1 :: String -> Maybe SExp
 sread1_ :: String -> SExp
-sparse :: String -> Exp
 swrite :: SExp -> String
 
 -- Lexing
@@ -19,7 +18,7 @@ data Tok = TSEP | TBEGIN Ty | TEND Ty | TSYM String | TSTR String
 
 wsChars = " \t\n\r"
 illegalChars = "\0\v"
-syntaxChars = ":()[]{}<>“”\""
+syntaxChars = "=()[]{}<>“”\""
 niceChar c = not $ any (c `elem`) [wsChars,illegalChars,syntaxChars]
 unexpected c = error $ "unexpected character: " ++ show c
 illegal c = error $ "illegal character: " ++ show c
@@ -48,7 +47,7 @@ lexStr = r "" 1 where
 
 slex [] = Nothing
 slex (c:cs) = case c of
-	':' -> Just $ (TSEP,cs)
+	'=' -> Just $ (TSEP,cs)
 	'(' -> Just $ (TBEGIN TPAREN,cs)
 	')' -> Just $ (TEND TPAREN,cs)
 	'[' -> Just $ (TBEGIN TBRAK,cs)
@@ -67,18 +66,20 @@ slex (c:cs) = case c of
 
 -- Reading
 -- TODO undot is too forgiving about weird chars.
-tbltbl es = STABLE $ zip (map NUM [1..]) es
+tbltbl es = STABLE $ mk es []
 tag t e = tbltbl [SATOM$STR$t, e]
 mkstr s = tag "str" (SATOM$STR$s)
 mktbl TPAREN es = STABLE es
-mktbl TBRAK es = tag "call" (STABLE es)
-mktbl TCURLY es = tag "mkdata" (STABLE es)
+mktbl TBRAK es = STABLE $ tcons (SATOM$STR$"call") es
+mktbl TCURLY es = STABLE $ tcons (SATOM$STR$"mkdata") es
+undot sym@('.':more) = SATOM(STR sym)
 undot sym = f (split (=='.') sym) where
 	f :: [String] -> SExp
 	f [] = error "wat... undot"
 	f (first:more) = foldl dot (SATOM$STR first) more
 	dot :: SExp -> String -> SExp
-	dot exp str = tbltbl[SATOM$STR$".", exp, SATOM$STR$str]
+	dot exp "" = error $ "Invalid dotted form: " ++ show sym
+	dot exp str = tbltbl[SATOM$STR$"call", SATOM$STR$".", exp, mkstr str]
 
 parseSym s = case s of
 	"#t" -> SATOM $ T
@@ -105,7 +106,7 @@ parse1 toks = case toks of
 
 parseSeq :: Ty -> [Tok] -> (SExp,[Tok])
 parseSeq ty toks = ordered 1 [] toks where
-	mktable end acc = if (ty == end) then mktbl ty acc else
+	mktable end acc = if (ty == end) then mktbl ty (fromList acc) else
 		error$concat["non-matching table delimiters: ", show ty, " and ", show end]
 	ordered :: Double -> [(Atom,SExp)] -> [Tok] -> (SExp,[Tok])
 	ordered n acc [] = error "unterminated sequence"
@@ -129,12 +130,12 @@ parseSeq ty toks = ordered 1 [] toks where
 -- Writting
 showSym s = if all niceChar s then s else "<" ++ s ++ ">"
 showTbl :: Tbl SExp -> String
-showTbl es = r $ arrayNotArray es where
+showTbl es = r $ ez es where
 	r(ordered,named) = "(" ++ (mix $ order ordered ++ name named) ++ ")"
 	name = map pair . sort
 	order = map swrite
 	mix = concat . intersperse " "
-	pair(k,v) = swrite(SATOM k) ++ ":" ++ swrite v
+	pair(k,v) = swrite(SATOM k) ++ "=" ++ swrite v
 
 writes = unlines . map swrite
 swrite (SATOM T) = "#t"
@@ -144,16 +145,10 @@ swrite (SATOM(STR s)) = showSym s
 swrite (SATOM(NUM d)) = writeNum d
 swrite (STABLE es) = showTbl es
 
-tblmap :: (a -> b) -> Tbl a -> Tbl b
-tblmap f [] = []
-tblmap f ((a,b):es)= (a,f b):tblmap f es
-toSyn (SATOM x) = ATOM x
-toSyn (STABLE es) = SYNTAX(tblmap toSyn es)
 stream p s = case p s of {Nothing->[]; Just(t,s')->t:stream p s'}
 tokenize = stream slex
 parse = stream parse1
 sread = parse . tokenize
 sread1 x = case sread x of {[t]->Just t; _->Nothing}
 sread1_ x = case sread1 x of {Nothing->error "parse error"; Just x->x}
-sparse s = SYNTAX $ zip (map NUM [1..]) $ map toSyn $ sread s
 rpl = interact $ concat . map swrite . sread

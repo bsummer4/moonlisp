@@ -10,14 +10,14 @@ Tables are mutable and map from t→t.
 All values are immutable besides tables and foreigns.
 
 ## Basic Syntax
-Reserved characters:: ““”#<>[]{}()": \t\r\n”
+Reserved characters:: ““”#<>[]{}()"= \t\r\n”
 All-non-reserved characters can be used raw, in identifiers.
 Syntax for atomic data structures:: #nil #true #false str <str> 4.5
 Quoted Strings:: "string" “string”
-Keys in ‘key:val’ forms must be atomic data structures.
-Syntactic forms:: (foo bar a:b)
-Table literals:: {foo bar a:b}
-Function calls:: [foo bar zaz a:b] (this passes {bar zaz a:b} to foo)
+Keys in ‘key=val’ forms must be atomic data structures.
+Syntactic forms:: (foo bar a=b)
+Table literals:: {foo bar a=b}
+Function calls:: [foo bar zaz a=b] (this passes {bar zaz a=b} to foo)
 
 Primitive lisp forms:
 	(λ name exp)
@@ -67,12 +67,12 @@ table?   :: {t} → bool
 
 ## Example Code
 (do
-	(match {1 2 k:c} ({a b k:c} (do
+	(match {1 2 k=c} ({a b k=c} (do
 		[write a b c])
-	(match {1 2 k:3} (e (do
+	(match {1 2 k=3} (e (do
 		[write e])))
-	(match (λx (match x ({a b k:c} [write a b c])))
-		(hello [hello 1 2 k:3]))
+	(match (λx (match x ({a b k=c} [write a b c])))
+		(hello [hello 1 2 k=3]))
 	(match {
 		(λ pair pair)
 		(λ pair (match pair ({car cdr} car)))

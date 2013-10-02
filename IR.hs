@@ -1,11 +1,10 @@
 module IR where
+import Prim
 
 -- Atomic Data Types
-data Atom = T | F | NIL | STR String | NUM Double deriving(Show,Read,Eq,Ord)
-type Tbl a = [(Atom,a)]
-data SExp = SATOM Atom | STABLE(Tbl SExp) deriving(Show,Read,Eq,Ord)
+data SExp = SATOM Atom | STABLE(Tbl SExp) deriving(Show,Eq,Ord)
 data Pattern = PSYM String | PATOM Atom | PTBL(Tbl Pattern)
-	deriving(Show,Read,Eq,Ord)
+	deriving(Show,Eq,Ord)
 
 data Exp
 	= ATOM Atom
@@ -13,13 +12,12 @@ data Exp
 	| DO [Exp]
 	| Λ String Exp
 	| MATCH Exp [(Pattern,Exp)]
-	| JS String
-	| LUA String
-	| PY String
-	| CALL(Tbl Exp)
+	| CALL Exp Exp
 	| DATA(Tbl Exp)
-	| SYNTAX(Tbl Exp)
-	deriving(Read,Show,Eq,Ord)
+	| SYNTAX (Tbl Exp)
+	| FFUNC String
+	| FSTMT String
+	deriving(Show,Eq,Ord)
 
 -- Lower-level representation.
 data LExp
@@ -30,7 +28,7 @@ data LExp
 	| LDOT LExp LExp
 	| LEQ LExp LExp
 	| LTABLE(Tbl LExp)
-	deriving (Show,Read)
+	deriving (Show)
 
 data LStmt
 	= LDO [LStmt]
@@ -38,11 +36,11 @@ data LStmt
 	| LIF LExp LStmt LStmt
 	| LSET LExp LExp LExp
 	| LRETURN LExp
-	deriving (Show,Read)
+	deriving (Show)
 
 -- Code Generation
-data CExp = CExp DelimTy CExp1 deriving (Show,Read)
-data DelimTy = Unsafe | Space | Safe deriving (Show,Read)
+data CExp = CExp DelimTy CExp1 deriving (Show)
+data DelimTy = Unsafe | Space | Safe deriving (Show)
 data CExp1
 	= CATOM String
 	| CSTMT String CExp
@@ -51,4 +49,4 @@ data CExp1
 	| CBINOP CExp String CExp
 	| CTRIOP CExp String CExp String CExp
 	| CSEMI CExp
-	deriving (Show,Read)
+	deriving (Show)

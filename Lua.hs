@@ -1,6 +1,6 @@
 module Lua(luaCG) where
 import IR
-import StrExp
+import StrSExp
 import Util
 import Data.List
 import Repl

@@ -1,4 +1,5 @@
 module Util where
+import qualified Prim
 import IR
 import Data.List
 
@@ -10,11 +11,6 @@ split isSep l = r [] [] l where
 maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
 isInt n = n == ((fromIntegral $ truncate n) :: Double)
 writeNum n = if isInt n then show(truncate n) else show n
-arrayNotArray :: Ord a => (Tbl a) -> ([a],[(Atom,a)])
-arrayNotArray a = r 1 ([],[]) (sort a) where
-	r i (o,u) [] = (reverse o,reverse u)
-	r i (o,u) ((k,v):m) = if same k i then r (i+1) (v:o,u) m else r i (o,(k,v):u) m
-	same k i = k == NUM i
 
 -- Code Generation Utilities
 tabs 0 = ""
