@@ -64,7 +64,6 @@ slex (c:cs) = case c of
 		Just $ lexSym [c] cs
 
 -- Reading
--- TODO undot is too forgiving about weird chars.
 tbltbl es = STABLE $ mk es []
 tag t e = tbltbl [SATOM$STR$t, e]
 mkstr s = tag "str" (SATOM$STR$s)

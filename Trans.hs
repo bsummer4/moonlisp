@@ -4,6 +4,7 @@ import IR
 import Read
 import Util
 import Data.List
+import Data.Maybe
 import System.IO
 
 toLStmt :: Exp -> LStmt
@@ -30,6 +31,32 @@ findSym (NS l ns) name = l - idx where
 
 eq :: LExp -> LExp -> LExp
 eq a b = LCALL (LVAR $ findSym emptyNS "=") (LTABLE $ mk [a,b] [])
+
+-- Pattern flatening
+data LeafTy = PatVar String | PatLit Atom | PatTbl deriving(Show)
+flatten :: Pattern -> [([Atom],LeafTy)]
+flatten p = reverse $ f [] [] p where
+	f path acc (PATOM a) = (reverse path,PatLit a):acc
+	f path acc (PSYM s) = (reverse path,PatVar s):acc
+	f path acc (PTBL t) = decend path ((reverse path,PatTbl):acc) t
+	decend path acc t = foldl (\a (k,v)->f (k:path) a v) acc (toList t)
+
+ifMatch :: Pattern -> LStmt -> LStmt
+ifMatch p body = foldr genCheck body (flatten p) where
+	genCheck :: ([Atom],LeafTy) -> LStmt -> LStmt
+	genCheck (path,PatVar v) acc = LIF (gvar path v) acc (LDO[])
+	genCheck (path,PatLit a) acc = LIF (glit path a) acc (LDO[])
+	genCheck (path,PatTbl) acc = LIF (gtbl path) acc (LDO[])
+	gvar path v = LATOM F
+	glit path l = LATOM F
+	gtbl path = LATOM F
+
+-- TODO We need to manipulate a NS too.
+bindVars :: Pattern -> [LStmt]
+bindVars p = map bind $ mapMaybe collectVar $ flatten p where
+	collectVar (path,(PatVar p)) = Just(path,p)
+	collectVar _ = Nothing
+	bind (path,name) = LLET 0 (LATOM F)
 
 match :: Namespace -> Exp -> [(Pattern,Exp)] -> [LStmt]
 match ns e [] = [LLET 0 $ mkexp ns e]
