@@ -16,7 +16,7 @@ mkdo ss = LDO ss
 builtins = (
 	[ ".", "!", "apply", "keys", "%", "append", "read", "write", "+"
 	, "-", "*", "/", "%", "^", "=", "~=", "<=", ">=", "<", ">", ".."
-	, "nil?", "bool?", "func?", "str?", "num?", "foreign?", "table?"
+	, "bool?", "func?", "str?", "num?", "foreign?", "table?"
 	, "eq", "neq"
 	])
 
@@ -51,7 +51,7 @@ match ns e pats = (LLET swvar $ mkexp ns e):ifs pats where
 -- unstmt s = mkexp $ retimplicit $ IΛ [] s
 unstmt :: Namespace -> LStmt -> LExp
 -- unstmt ns s = mkexp ns $ retimplicit $ Λ "" s
-unstmt ns s = LCALL (Lλ 0 $ s) (LATOM NIL)
+unstmt ns s = LCALL (Lλ 0 $ s) (LATOM F)
 mkstmts :: Namespace -> Exp -> [LStmt]
 mkstmts ns e = case e of
 	MATCH e patterns -> match ns e patterns
@@ -64,7 +64,7 @@ mkstmts ns e = case e of
 
 mkexp :: Namespace -> Exp -> LExp
 mkexp ns e = case e of
-	MATCH e patterns -> LCALL (Lλ 0 $ mkdo $ match ns e patterns) (LATOM NIL)
+	MATCH e patterns -> LCALL (Lλ 0 $ mkdo $ match ns e patterns) (LATOM F)
 	ATOM a -> LATOM a
 	VAR v -> LVAR (findSym ns v)
 	Λ v e -> case wSym ns v of (vi,ns') -> Lλ vi $ mkstmt ns' e

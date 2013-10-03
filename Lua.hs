@@ -12,7 +12,6 @@ class ToCG a where { cg::a -> CExp }
 instance ToCG Atom where
 	cg T = atom("true")
 	cg F = atom("false")
-	cg NIL = atom("nil")
 	cg (STR s) = atom(show s)
 	cg (NUM d) = atom(writeNum d)
 
@@ -34,7 +33,7 @@ instance ToCG LExp where
 
 keywords =
 	[ "and", "break", "do", "else", "elseif", "end", "false", "for", "function"
-	, "if","in", "local", "nil", "not", "or", "repeat", "return", "then", "true"
+	, "if","in", "local", "not", "or", "repeat", "return", "then", "true"
 	, "until", "while" ]
 
 tokens =
