@@ -52,6 +52,17 @@ ifMatch p body = foldr genCheck body (flatten p) where
 	gtbl path = LATOM F
 
 -- TODO We need to manipulate a NS too.
+--  How can this work?
+--   What are we doign?
+--    Input code needs to be an Exp.
+--     We're still using named variables.
+--    Output code needs to be an LStmt
+--     It needs to use LIF.
+--   What do we needs to do?
+--    First, read the pattern and decide what variables need to be bound.
+--     Also, make sure no variables are used more than once.
+--    Next, bind all the variables into a ‘Namespace’.
+--    Procede as normal, use the new namespace when calling ‘mkstmt’.
 bindVars :: Pattern -> [LStmt]
 bindVars p = map bind $ mapMaybe collectVar $ flatten p where
 	collectVar (path,(PatVar p)) = Just(path,p)
