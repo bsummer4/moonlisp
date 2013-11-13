@@ -27,8 +27,8 @@ gen c = r 0 c where
 	r i (CExp _ (CTUPLE(pre,post) mid)) = genTuple i pre post mid
 	r i (CExp _ (CBINOP a sep b)) = r i a ++ sep ++ r i b
 	r i (CExp _ (CTRIOP a sep1 b sep2 c)) = r i a ++ sep1 ++ r i b ++ sep2 ++ r i c
---	r i (CExp _ (CBLOCK(pre,post) mid@[CExp _(CBLOCK _ _)])) = genBlk i pre post mid
---	r i (CExp _ (CBLOCK(pre,post) [s])) = pre ++ r i (space s) ++ post
+	--r i (CExp _ (CBLOCK(pre,post) mid@[CExp _(CBLOCK _ _)])) = genBlk i pre post mid
+	--r i (CExp _ (CBLOCK(pre,post) [s])) = pre ++ r i (space s) ++ post
 	r i (CExp _ (CBLOCK(pre,post) mid)) = genBlk i pre post mid
 	r i (CExp _ (CSEMI c)) = r i c ++ ";"
 

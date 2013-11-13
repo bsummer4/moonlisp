@@ -6,8 +6,9 @@ import Util
 import Data.List
 import Repl
 
-var a = "v" ++ show a
+luaCG :: LStmt -> CExp
 luaCG x = cg x
+
 class ToCG a where { cg::a -> CExp }
 instance ToCG Atom where
 	cg T = atom("true")
@@ -15,21 +16,31 @@ instance ToCG Atom where
 	cg (STR s) = atom(show s)
 	cg (NUM d) = atom(writeNum d)
 
+ret s = block ("do","end") [stmt "return" s]
+
 (brak,paren) = (tuple("[","]"), tuple("(",")"))
 instance ToCG LStmt where
 	cg (LDO b) = block("do","end") (map cg b)
-	cg (LLET v e) = stmt "local" $ (CExp Space $ CBINOP (atom(var v)) "=" (cg e))
-	cg (LRETURN x) = stmt "return" (cg x)
-	cg (LIF c a b) = block ("if","end") [cg c,br "then" a, br "else" b] where
+	cg (LBIND v) = stmt "local" $ atom(var v)
+	cg (LASSIGN v e) = CExp Space $ CBINOP (atom(var v)) "=" (cg e)
+	cg (LRETURN x) = ret $ cg x
+	cg (LFOREIGN_DIRECTIVE d) = atom d
+	cg (LIF c a b) = block ("if","end") [atom$var c,br "then" a, br "else" b] where
 		br s b = block(s,"") $ [cg b]
 
 instance ToCG LExp where
 	cg (LATOM p) = cg p
+	cg (LFFI s) = cg $ STR s -- TODO Implement the Lua FFI backend.
 	cg (LVAR v) = atom(var v)
-	cg (LCALL f a) = jux (cg f) $ paren [cg a]
+	cg (LGET o k) = jux (atom$var o) $ brak [atom$var k]
+	cg (LCALL f a) = jux (atom$var f) $ paren [atom$var a]
 	cg (Lλ a s) = (blockexp("function("++var a++")","end") [cg s])
+	cg (LGLOBAL s) = atom $ validateID s
+	cg (LFOREIGN_CALL f args) = jux (atom$var f) $ paren $ map (atom.var) args
+	cg (LFOREIGN_METHOD obj meth args) =
+		binop (atom$var obj) ":" $ jux (atom meth) $ paren $ map (atom.var) args
 	cg (LTABLE forms) = (\x->(CExp Unsafe x)) $ CTUPLE ("{","}") $ map unpair (toList forms) where
-		unpair (a,b) = binop (brak[cg a]) "=" (cg b)
+		unpair (a,b) = binop (brak[cg a]) "=" (atom$var b)
 
 keywords =
 	[ "and", "break", "do", "else", "elseif", "end", "false", "for", "function"
@@ -43,12 +54,15 @@ tokens =
 validateID id = if validID id then id else error s where
 	s = "'" ++ id ++ "' is not a valid Lua identifier."
 
+var a = "v" ++ show a
 validID [] = False
-validID s@(first:rest) = and [not tmp, not kw, not leadingDigit, okChars] where
-	kw = and [s `elem` keywords, s `elem` tokens]
-	leadingDigit = first `elem` digits
-	okChars = all (`elem` luaid) s
-	letters = ['a'..'z'] ++ ['A'..'Z']
-	digits = ['0'..'9']
-	luaid = "_" ++ letters ++ digits
-	tmp = s == "_"
+validID s@(first:rest) =
+	and[not tmp, not kw, not leadingDigit, okChars, not cgvar] where
+		cgvar = and['v'==first, not$null rest, all(`elem` digits) rest]
+		kw = or [s `elem` keywords, s `elem` tokens]
+		leadingDigit = first `elem` digits
+		okChars = all (`elem` luaid) s
+		letters = ['a'..'z'] ++ ['A'..'Z']
+		digits = ['0'..'9']
+		luaid = "_" ++ letters ++ digits
+		tmp = s == "_"

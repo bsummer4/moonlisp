@@ -1,11 +1,4 @@
 # Considerations
-## ‘return’ can't be allowed in the Internal Representation
-We compile statements into expressions like this:
-	STMT → (λ()return STMT)()
-Any return statements inside of STMT will expect to return to the surrounding
-	block, but they will not. Since there is no way around this, we cannot
-	support return statements.
-
 ## Implementing Pattern Matching on Tables.
 Let's just support variable-free table literals first.
 	For example: {1 2 b=3}
@@ -37,3 +30,24 @@ Alright, cool. Now, how do we bind variables in table-patterns?
 Alright, now for nested table patterns.
 	If we just do each of the first three steps above recursively, we'll
 	have all of our checks and binds done correctly.
+
+## Complications
+### Javascript objects have only string keys.
+This is also true for arrays.
+	Arrays are just objects with keys ['0', '1', '2', ..].
+
+This doesn't match out model.
+
+We can build (or use) something like jshashtable.
+	For this to be effective, we need a decent hashing function for all
+	Moonlisp objects. This is annoying, but probably doable.
+
+We can implement naively implement arrays on top of our hash table
+implementation. This will be slow, but this is just a proof of concept anyways.
+
+## Thoughts on transforming into the new, flat LIR:
+(f (LET (var e) stmt))
+	BIND v1; BIND v2; ASSIGN v2 e; ASSIGN v1 stmt; f(v1)
+
+(f (IF x a b)) ->
+	BIND v1; IF v0 {ASSIGN v1 a}{ASSIGN v1 b}; f(v1)

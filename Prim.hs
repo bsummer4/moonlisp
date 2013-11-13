@@ -4,8 +4,8 @@ module Prim
 	) where
 import Data.List
 
-data Atom = T | F | STR String | NUM Double deriving(Eq,Ord)
-data Tbl a = Tbl [a] [(Atom,a)] deriving(Eq,Ord)
+data Atom = T | F | STR String | NUM Double deriving(Eq,Ord,Read)
+data Tbl a = Tbl [a] [(Atom,a)] deriving(Eq,Ord,Read)
 nums = map NUM [1..]
 mk a b = Tbl a (sort b)
 ez (Tbl a b) = (a,b)

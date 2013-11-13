@@ -1,4 +1,5 @@
-all:V: o.Moonlisp
+all:V:
+
 o.%: `{ls *.hs}
 	ghc -main-is $stem.main $stem -o o.$stem
 
