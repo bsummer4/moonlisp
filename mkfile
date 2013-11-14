@@ -1,7 +1,8 @@
+hsflags = -XUnicodeSyntax -fwarn-incomplete-patterns
 all:V:
 
 o.%: `{ls *.hs}
-	ghc -fwarn-incomplete-patterns -main-is $stem.main $stem -o o.$stem
+	ghc $hsflags -main-is $stem.main $stem -o o.$stem
 
 
 clean:V:

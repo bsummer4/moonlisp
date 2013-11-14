@@ -2,14 +2,15 @@ module Util where
 import Prim
 import IR
 import Data.List
+import Prelude.Unicode
 
 split isSep l = r [] [] l where
 	r strs chars [] = reverse(reverse chars:strs)
 	r strs chars (e:es) = if isSep e then r (reverse chars:strs) [] es else
 		r strs (e:chars) es
 
-maybeRead r = case Prelude.reads r of {[(a,_)]->Just a; _->Nothing}
-isInt n = n == ((fromIntegral $ truncate n) :: Double)
+maybeRead r = case Prelude.reads r of {[(a,_)]→Just a; _→Nothing}
+isInt n = n ≡ ((fromIntegral $ truncate n) ∷ Double)
 writeNum n = if isInt n then show(truncate n) else show n
 
 -- Code Generation Utilities
@@ -19,7 +20,7 @@ dent i "" = ""
 dent i s = tabs i ++ s
 gen c = r 0 c where
 	genBlk i pre post mid =  pre ++ "\n" ++ block (1+i) mid ++ dent (i+1) post
-	block i codes = concat $ map (\s->tabs i++r i s++"\n") codes
+	block i codes = concat $ map (\s→tabs i++r i s++"\n") codes
 	genTuple i pre post mid = pre++(concat$intersperse ","$map (r i) mid)++post
 	r i (CExp _ (CATOM s)) = s
 	r i (CExp _ (CSTMT s (CExp Space c))) = s ++ " " ++ r i (CExp Space c)

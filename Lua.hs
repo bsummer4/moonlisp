@@ -5,11 +5,12 @@ import Read
 import Util
 import Data.List
 import Repl
+import Prelude.Unicode
 
-luaCG :: LStmt -> CExp
+luaCG ∷ LStmt → CExp
 luaCG x = cg x
 
-class ToCG a where { cg::a -> CExp }
+class ToCG a where { cg∷a → CExp }
 instance ToCG Atom where
 	cg T = atom("true")
 	cg F = atom("false")
@@ -40,7 +41,7 @@ instance ToCG LExp where
 	cg (LFOREIGN_CALL f args) = jux (atom$var f) $ paren $ map (atom.var) args
 	cg (LFOREIGN_METHOD obj meth args) =
 		binop (atom$var obj) ":" $ jux (atom meth) $ paren $ map (atom.var) args
-	cg (LTABLE forms) = (\x->(CExp Unsafe x)) $ CTUPLE ("{","}") $ map unpair (toList forms) where
+	cg (LTABLE forms) = (\x→(CExp Unsafe x)) $ CTUPLE ("{","}") $ map unpair (toList forms) where
 		unpair (a,b) = binop (brak[cg a]) "=" (atom$var b)
 
 keywords =
@@ -59,11 +60,11 @@ var a = "v" ++ show a
 validID [] = False
 validID s@(first:rest) =
 	and[not tmp, not kw, not leadingDigit, okChars, not cgvar] where
-		cgvar = and['v'==first, not$null rest, all(`elem` digits) rest]
+		cgvar = and['v'≡first, not$null rest, all(`elem` digits) rest]
 		kw = or [s `elem` keywords, s `elem` tokens]
 		leadingDigit = first `elem` digits
 		okChars = all (`elem` luaid) s
 		letters = ['a'..'z'] ++ ['A'..'Z']
 		digits = ['0'..'9']
 		luaid = "_" ++ letters ++ digits
-		tmp = s == "_"
+		tmp = s ≡ "_"

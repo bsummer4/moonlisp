@@ -3,16 +3,17 @@ import Prim
 import IR
 import Util
 import Data.List
+import Prelude.Unicode
 
-sread :: String -> [SExp]
-sread1 :: String -> Maybe SExp
-sread1_ :: String -> SExp
-swrite :: SExp -> String
+sread ∷ String → [SExp]
+sread1 ∷ String → Maybe SExp
+sread1_ ∷ String → SExp
+swrite ∷ SExp → String
 
 -- Lexing
 data OneOrTwo a = Two a a | One a
 data Ty = TPAREN | TBRAK | TCURLY deriving (Eq,Ord,Show,Read)
-data Tok = TSEP | TBEGIN Ty | TEND Ty | TSYM String | TSTR String
+data Tok = TFOREIGN | TSEP | TBEGIN Ty | TEND Ty | TSYM String | TSTR String
 	deriving (Eq,Ord,Show,Read)
 
 wsChars = " \t\n\r"
@@ -46,19 +47,20 @@ lexStr = r "" 1 where
 
 slex [] = Nothing
 slex (c:cs) = case c of
-	'→' -> Just $ (TSEP,cs)
-	'(' -> Just $ (TBEGIN TPAREN,cs)
-	')' -> Just $ (TEND TPAREN,cs)
-	'[' -> Just $ (TBEGIN TBRAK,cs)
-	']' -> Just $ (TEND TBRAK,cs)
-	'{' -> Just $ (TBEGIN TCURLY,cs)
-	'}' -> Just $ (TEND TCURLY,cs)
-	'<' -> Just $ lexDelimSym cs
-	'>' -> unexpected c
-	'“' -> Just $ lexStr cs
-	'”' -> unexpected c
-	'"' -> Just $ lexDumbStr cs
-	_ ->
+	'→' → Just $ (TSEP,cs)
+	'!' → Just $ (TFOREIGN,cs)
+	'(' → Just $ (TBEGIN TPAREN,cs)
+	')' → Just $ (TEND TPAREN,cs)
+	'[' → Just $ (TBEGIN TBRAK,cs)
+	']' → Just $ (TEND TBRAK,cs)
+	'{' → Just $ (TBEGIN TCURLY,cs)
+	'}' → Just $ (TEND TCURLY,cs)
+	'<' → Just $ lexDelimSym cs
+	'>' → unexpected c
+	'“' → Just $ lexStr cs
+	'”' → unexpected c
+	'"' → Just $ lexDumbStr cs
+	_ →
 		if c `elem` wsChars then slex cs else
 		if c `elem` illegalChars then illegal c else
 		Just $ lexSym [c] cs
@@ -71,61 +73,62 @@ mktbl TPAREN es = STABLE es
 mktbl TBRAK es = STABLE $ tcons (SATOM$STR$"call") es
 mktbl TCURLY es = STABLE $ tcons (SATOM$STR$"mkdata") es
 undot sym@('.':more) = SATOM(STR sym)
-undot sym = f (split (=='.') sym) where
-	f :: [String] -> SExp
+undot sym = f (split (≡'.') sym) where
+	f ∷ [String] → SExp
 	f [] = error "wat... undot"
 	f (first:more) = foldl dot (SATOM$STR first) more
-	dot :: SExp -> String -> SExp
+	dot ∷ SExp → String → SExp
 	dot exp "" = error $ "Invalid dotted form: " ++ show sym
-	dot exp str = tbltbl[SATOM$STR "get", exp, mkstr str]
+	dot exp str = tbltbl[SATOM$STR "lookup", exp, mkstr str]
 
 parseSym s = case s of
-	"#t" -> SATOM $ T
-	"#true" -> SATOM $ T
-	"#f" -> SATOM $ F
-	"#false" -> SATOM $ F
-	('#':s) -> error $ "Invalid hash pattern: " ++ show ('#':s)
-	s -> case reads s of
-		[] -> undot s
-		[(d,[])] -> SATOM $ NUM d
-		[(_,_)] -> error $ "Invalid number: " ++ show s
-		_ -> error "Unexpected behavior from Prelude.reads."
+	"#t" → SATOM $ T
+	"#true" → SATOM $ T
+	"#f" → SATOM $ F
+	"#false" → SATOM $ F
+	('#':s) → error $ "Invalid hash pattern: " ++ show ('#':s)
+	s → case reads s of
+		[] → undot s
+		[(d,[])] → SATOM $ NUM d
+		[(_,_)] → error $ "Invalid number: " ++ show s
+		_ → error "Unexpected behavior from Prelude.reads."
 
-parse1 :: [Tok] -> Maybe(SExp,[Tok])
+parse1 ∷ [Tok] → Maybe(SExp,[Tok])
 parse1 toks = case toks of
-	[] -> Nothing
-	TEND _ : _ -> error "Unexpected sequence terminator"
-	TSEP : _ -> error "Unexpected separator"
-	TBEGIN ty : ts -> Just $ parseSeq ty ts
-	TSYM s : ts -> Just (parseSym s, ts)
-	TSTR s : ts -> Just (mkstr s, ts)
+	[] → Nothing
+	TEND _ : _ → error "Unexpected sequence terminator"
+	TSEP : _ → error "Unexpected separator"
+	TBEGIN ty : ts → Just $ parseSeq ty ts
+	TFOREIGN : _ → error "TODO"
+	TSYM s : ts → Just (parseSym s, ts)
+	TSTR s : ts → Just (mkstr s, ts)
 
-parseSeq :: Ty -> [Tok] -> (SExp,[Tok])
+parseSeq ∷ Ty → [Tok] → (SExp,[Tok])
 parseSeq ty toks = ordered 1 [] toks where
-	mktable end acc = if (ty == end) then mktbl ty (fromList acc) else
+	mktable end acc = if (ty ≡ end) then mktbl ty (fromList acc) else
 		error$concat["non-matching table delimiters: ", show ty, " and ", show end]
-	ordered :: Double -> [(Atom,SExp)] -> [Tok] -> (SExp,[Tok])
+	ordered ∷ Double → [(Atom,SExp)] → [Tok] → (SExp,[Tok])
 	ordered n acc [] = error "unterminated sequence"
 	ordered n acc (TEND endty:ts) = (mktable endty acc, ts)
 	ordered n acc (TSEP:ts) = error "unexpected :"
 	ordered n acc (t:TSEP:ts) = named acc (t:TSEP:ts)
 	ordered n acc ts = case parse1 ts of
-		Nothing -> error "Unterminated sequence"
-		Just(lv,more) -> ordered (n+1) ((NUM n,lv):acc) more
-	named :: [(Atom,SExp)] -> [Tok] -> (SExp,[Tok])
+		Nothing → error "Unterminated sequence"
+		Just(lv,more) → ordered (n+1) ((NUM n,lv):acc) more
+	named ∷ [(Atom,SExp)] → [Tok] → (SExp,[Tok])
 	named acc [] = error "unterminated sequence"
 	named acc (TEND endty:ts) = (mktable endty acc, ts)
 	named acc (TSEP:ts) = error "unexpected :"
 	named acc (TBEGIN _:_) = error "Tables are not valid keys"
 	named acc (a:TSEP:TSEP:ts) = error "unexpected :"
 	named acc (a:TSEP:ts) = case (parse1 [a], parse1 ts) of
-		(Just(SATOM k,[]),Just(v,remain)) -> named ((k,v):acc) remain
-		_ -> error "wat"
+		(Just(SATOM k,[]),Just(v,remain)) → named ((k,v):acc) remain
+		_ → error "wat"
 	named acc _ = error "ordered elements may not follow named ones"
 
 -- Writting
 showSym s = if all niceChar s then s else "<" ++ s ++ ">"
-showTbl :: Tbl SExp -> String
+showTbl ∷ Tbl SExp → String
 showTbl es = r $ ez es where
 	r(ordered,named) = "(" ++ (mix $ order ordered ++ name named) ++ ")"
 	name = map pair . sort
@@ -140,10 +143,10 @@ swrite (SATOM(STR s)) = showSym s
 swrite (SATOM(NUM d)) = writeNum d
 swrite (STABLE es) = showTbl es
 
-stream p s = case p s of {Nothing->[]; Just(t,s')->t:stream p s'}
+stream p s = case p s of {Nothing→[]; Just(t,s')→t:stream p s'}
 tokenize = stream slex
 parse = stream parse1
 sread = parse . tokenize
-sread1 x = case sread x of {[t]->Just t; _->Nothing}
-sread1_ x = case sread1 x of {Nothing->error "parse error"; Just x->x}
+sread1 x = case sread x of {[t]→Just t; _→Nothing}
+sread1_ x = case sread1 x of {Nothing→error "parse error"; Just x→x}
 rpl = interact $ concat . map swrite . sread

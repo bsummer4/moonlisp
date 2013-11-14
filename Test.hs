@@ -23,7 +23,7 @@ import Trans
 	-- | LRETURN Int
 	-- deriving (Show,Read,Eq,Ord)
 
-lbinds :: [LStmt]
+lbinds ∷ [LStmt]
 lbinds =
 	[ LFOREIGN_DIRECTIVE "require 'io'"
 	, LFOREIGN_DIRECTIVE "require 'os'"
@@ -39,7 +39,7 @@ lbinds =
 		, LBIND 5, LASSIGN 5 $ LGET 3 4
 		, LRETURN $ LFOREIGN_CALL 5 [2] ]]
 
-lEarlyReturn :: LStmt
+lEarlyReturn ∷ LStmt
 lEarlyReturn = LDO
 	[ LBIND 2, LASSIGN 2 $ LATOM $ STR "Hi"
 	, LRETURN $ LCALL 0 2
@@ -47,17 +47,17 @@ lEarlyReturn = LDO
 	, LRETURN $ LVAR 3
 	]
 
-lHelloWorld :: [LStmt]
+lHelloWorld ∷ [LStmt]
 lHelloWorld =
 	[ LBIND 2, LASSIGN 2 $ LATOM $ STR $ "Hello World!\n"
 	, LBIND 3, LASSIGN 3 $ LCALL 0 2
 	, LBIND 4, LASSIGN 4 $ LATOM $ NUM $ 0
 	, LRETURN $ LCALL 1 4 ]
 
-simpleExp :: Exp
+simpleExp ∷ Exp
 simpleExp = RETURN $ DO [CALL (VAR "write") $ ATOM $ STR "Hello World!\n"]
 
-eHelloWorld :: Exp
+eHelloWorld ∷ Exp
 eHelloWorld = DO
 	[ FSTMT "require 'io'"
 	, FSTMT "require 'os'"
@@ -65,10 +65,10 @@ eHelloWorld = DO
 	, FCALL (GET (GLOBAL "os") (ATOM (STR "exit"))) [ATOM$NUM 0]
 	]
 
-toLIR :: Exp -> LStmt
+toLIR ∷ Exp → LStmt
 toLIR = Trans.compileToLIR . Trans.makeImplicitReturnsExplicit
 
-compiler :: Exp -> IO()
+compiler ∷ Exp → IO()
 compiler = putStrLn . gen . luaCG . toLIR
 
 yo = putStrLn . gen . luaCG . LDO
