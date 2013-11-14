@@ -3,6 +3,7 @@ import Prim
 import IR
 import Util
 import Lua
+import Trans
 
 -- data Atom = T | F | STR String | NUM Double deriving(Eq,Ord)
 -- data Tbl a = Tbl [a] [(Atom,a)] deriving(Eq,Ord)

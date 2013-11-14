@@ -1,6 +1,6 @@
 module Prim
 	( Tbl, Atom(T, F, STR, NUM)
-	, mk, ez, toList, fromList, tcons, tcar, tcdr, tmap
+	, mk, ez, toList, fromList, tcons, tmap
 	) where
 import Data.List
 
@@ -17,8 +17,6 @@ fromList l = r 1 [] [] (sort l) where
 		else r i o ((k,v):u) l
 
 tcons a (Tbl o u) = Tbl (a:o) u
-tcar (Tbl (a:b) u) = a
-tcdr (Tbl (a:b) u) = Tbl b u
 tmap f (Tbl o u) = Tbl (map f o) (map (\(k,v)->(k,f v)) u)
 
 instance Show Atom where

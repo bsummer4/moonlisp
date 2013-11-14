@@ -24,6 +24,7 @@ instance ToCG LStmt where
 	cg (LBIND v) = stmt "local" $ atom(var v)
 	cg (LASSIGN v e) = CExp Space $ CBINOP (atom(var v)) "=" (cg e)
 	cg (LRETURN x) = ret $ cg x
+	cg (LSET o k v) = binop (jux (atom$var o) $ brak [atom$var k]) "=" (atom$var v)
 	cg (LFOREIGN_DIRECTIVE d) = atom d
 	cg (LIF c a b) = block ("if","end") [atom$var c,br "then" a, br "else" b] where
 		br s b = block(s,"") $ [cg b]
@@ -32,6 +33,7 @@ instance ToCG LExp where
 	cg (LATOM p) = cg p
 	cg (LFFI s) = cg $ STR s -- TODO Implement the Lua FFI backend.
 	cg (LVAR v) = atom(var v)
+	cg (LNEWTABLE) = atom "{}"
 	cg (LGET o k) = jux (atom$var o) $ brak [atom$var k]
 	cg (LCALL f a) = jux (atom$var f) $ paren [atom$var a]
 	cg (Lλ a s) = (blockexp("function("++var a++")","end") [cg s])

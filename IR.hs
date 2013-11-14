@@ -15,7 +15,7 @@ data Exp
 	| CALL Exp Exp
 	| DATA(Tbl Exp)
 	| SYNTAX (Tbl Exp)
-	| FFUNC String
+	| GLOBAL String
 	| FSTMT String
 	| RETURN Exp
 	deriving(Show,Read,Eq,Ord)
@@ -25,6 +25,7 @@ data LExp
 	= LATOM Atom
 	| LVAR Int
 	| LCALL Int Int
+	| LNEWTABLE
 	| LGET Int Int
 	| LGLOBAL String
 	| LFOREIGN_METHOD Int String [Int]
@@ -38,6 +39,7 @@ data LStmt
 	= LDO [LStmt]
 	| LBIND Int
 	| LASSIGN Int LExp
+	| LSET Int Int Int
 	| LIF Int LStmt LStmt
 	| LFOREIGN_DIRECTIVE String
 	| LRETURN LExp
