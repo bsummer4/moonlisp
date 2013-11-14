@@ -24,7 +24,7 @@ Primitive lisp forms:
 	(match exp (pattern exp) ...)
 	(do exp ...)
 
-Foreign statements, global variables, function calls, and mehod calls:
+Foreign statements, global variables, function calls, and method calls:
 	Foreign Statements:: !(require io)
 	Reference a global variable:: !window
 	Call a foreign method:: ![obj:method a b c]

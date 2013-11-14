@@ -1,27 +1,25 @@
 # Get a primitive compile working, and stable.
 TODO Using duplicate keys in a table should be a syntax error.
-TODO Lut code generator doesn't output strings correctly in all cases.
+TODO Lua code generator doesn't output strings correctly in all cases.
 TODO The Code Generation (CExp) stuff is starting to suck.
 	Once we get everything working, this needs to be rewritten to
 		cleanly handle all cases.
 
 TODO The REPL chokes on parens in string literals.
+TOOD Write parsing and syntax-handling for method-call syntax:: [o:m a]
 TODO Implement ‘match’.
 	TODO Implement single-variable let-forms in the IR.
 	TODO First implement a simple switch statement on atomic values.
 		Add support to the IR.
 			Compile down to if-else chains for now.
-	TODO Generalize the IR
 
-TODO Implement ‘def’:: (def x y) ... → (match y (x ...))
+TODO Add support for ‘!’ syntax for foreign symbols/calls/statements/methods.
+TODO Implement ‘def’ :: (def x y) ... → (match y (x ...))
 TODO Implement foreign-syntax and foreign-function.
 TODO Write the standard library for Lua.
 TODO Write the command line interface code.
-TODO Write backends for Python and Javascript.
-TODO Write a standard library for Python.
-TODO Write a standard library for Javascript.
-TODO Test cases.
-TODO Quickcheck.
+TODO Write codegen and the standard library for Python and Javascript.
+TODO Write more and better test cases.
 
 # Add some important features.
 Scheme (r5rs) style macros.
