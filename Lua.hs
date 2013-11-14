@@ -31,7 +31,6 @@ instance ToCG LStmt where
 
 instance ToCG LExp where
 	cg (LATOM p) = cg p
-	cg (LFFI s) = cg $ STR s -- TODO Implement the Lua FFI backend.
 	cg (LVAR v) = atom(var v)
 	cg (LNEWTABLE) = atom "{}"
 	cg (LGET o k) = jux (atom$var o) $ brak [atom$var k]

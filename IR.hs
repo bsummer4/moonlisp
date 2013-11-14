@@ -36,7 +36,6 @@ data LExp
 	| LFOREIGN_CALL Int [Int]
 	| Lλ Int LStmt
 	| LTABLE(Tbl Int)
-	| LFFI String
 	deriving (Show,Read,Eq,Ord)
 
 data LStmt
