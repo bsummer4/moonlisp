@@ -4,6 +4,8 @@ import IR
 import Util
 import Lua
 import Trans
+import Syn
+import Read
 
 -- data Atom = T | F | STR String | NUM Double deriving(Eq,Ord)
 -- data Tbl a = Tbl [a] [(Atom,a)] deriving(Eq,Ord)
@@ -65,6 +67,13 @@ eHelloWorld = DO
 	, FCALL (GET (GLOBAL "os") (ATOM (STR "exit"))) [ATOM$NUM 0]
 	]
 
+mHelloWorld = unlines
+	[ "$“require 'io'”"
+	, "$“require 'os'”"
+	, "$[(lookup $io “write”) “Hello World!\n”]"
+	, "$[(lookup $os “exit”) 0]"
+	]
+
 toLIR ∷ Exp → LStmt
 toLIR = Trans.compileToLIR . Trans.makeImplicitReturnsExplicit
 
@@ -73,4 +82,4 @@ compiler = putStrLn . gen . luaCG . toLIR
 
 yo = putStrLn . gen . luaCG . LDO
 luaHW = yo $ lbinds ++ lHelloWorld
-main = compiler eHelloWorld
+main = compiler $ DO $ map unsyntax $ map fromSexp $ sread $ mHelloWorld
