@@ -17,7 +17,7 @@ data Tok = TSEP | TBEGIN Ty | TEND Ty | TSYM String | TSTR String
 
 wsChars = " \t\n\r"
 illegalChars = "\0\v"
-syntaxChars = "←()[]{}<>“”\""
+syntaxChars = "→()[]{}<>“”\""
 niceChar c = not $ any (c `elem`) [wsChars,illegalChars,syntaxChars]
 unexpected c = error $ "unexpected character: " ++ show c
 illegal c = error $ "illegal character: " ++ show c
@@ -46,7 +46,7 @@ lexStr = r "" 1 where
 
 slex [] = Nothing
 slex (c:cs) = case c of
-	'←' -> Just $ (TSEP,cs)
+	'→' -> Just $ (TSEP,cs)
 	'(' -> Just $ (TBEGIN TPAREN,cs)
 	')' -> Just $ (TEND TPAREN,cs)
 	'[' -> Just $ (TBEGIN TBRAK,cs)
@@ -131,7 +131,7 @@ showTbl es = r $ ez es where
 	name = map pair . sort
 	order = map swrite
 	mix = concat . intersperse " "
-	pair(k,v) = swrite(SATOM k) ++ "←" ++ swrite v
+	pair(k,v) = swrite(SATOM k) ++ "→" ++ swrite v
 
 writes = unlines . map swrite
 swrite (SATOM T) = "#t"

@@ -27,5 +27,5 @@ instance Show Atom where
 
 instance Show a => Show(Tbl a) where
 	show (Tbl o u) = "{" ++ mix (map show o ++ map pair u) ++ "}" where
-		pair(k,v) = show k ++ "←" ++ show v
+		pair(k,v) = show k ++ "→" ++ show v
 		mix = concat . intersperse ", "
