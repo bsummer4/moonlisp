@@ -77,7 +77,7 @@ undot sym = f (split (=='.') sym) where
 	f (first:more) = foldl dot (SATOM$STR first) more
 	dot :: SExp -> String -> SExp
 	dot exp "" = error $ "Invalid dotted form: " ++ show sym
-	dot exp str = tbltbl[SATOM$STR$"call", SATOM$STR$".", exp, mkstr str]
+	dot exp str = tbltbl[SATOM$STR "get", exp, mkstr str]
 
 parseSym s = case s of
 	"#t" -> SATOM $ T

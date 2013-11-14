@@ -29,6 +29,7 @@ fixform e = case e of {SYNTAX t->f(ez t); _ -> error "wut"} where
 transforms :: [(String,[Exp] -> [(Atom,Exp)] -> Exp)]
 transforms = (
 	[ ("str", \[VAR s] [] -> ATOM$STR s)
+	, ("get", \[a,b] [] -> GET (t a) (t b))
 	, ("call", \(f:args) o -> CALL (t f) $ DATA $ tmap t $ mk args o)
 	, ("mkdata", \o n -> DATA $ tmap t $ mk o n)
 	, ("do", \o [] -> DO $ map t o)
