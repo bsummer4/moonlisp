@@ -14,9 +14,13 @@ data Exp
 	| MATCH Exp [(Pattern,Exp)]
 	| CALL Exp Exp
 	| DATA(Tbl Exp)
+	| SET Exp Exp Exp
+	| GET Exp Exp
 	| SYNTAX (Tbl Exp)
 	| GLOBAL String
 	| FSTMT String
+	| FMETHOD Exp String [Exp]
+	| FCALL Exp [Exp]
 	| RETURN Exp
 	deriving(Show,Read,Eq,Ord)
 

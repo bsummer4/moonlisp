@@ -49,10 +49,28 @@ lEarlyReturn = LDO
 
 lHelloWorld :: [LStmt]
 lHelloWorld =
-	[ LBIND 2, LASSIGN 2 $ LATOM $ STR $ "Hello World\n"
+	[ LBIND 2, LASSIGN 2 $ LATOM $ STR $ "Hello World!\n"
 	, LBIND 3, LASSIGN 3 $ LCALL 0 2
 	, LBIND 4, LASSIGN 4 $ LATOM $ NUM $ 0
 	, LRETURN $ LCALL 1 4 ]
 
+simpleExp :: Exp
+simpleExp = RETURN $ DO [CALL (VAR "write") $ ATOM $ STR "Hello World!\n"]
+
+eHelloWorld :: Exp
+eHelloWorld = DO
+	[ FSTMT "require 'io'"
+	, FSTMT "require 'os'"
+	, FCALL (GET (GLOBAL "io") (ATOM (STR "write"))) [ATOM$STR "Hello World!\n"]
+	, FCALL (GET (GLOBAL "os") (ATOM (STR "exit"))) [ATOM$NUM 0]
+	]
+
+toLIR :: Exp -> LStmt
+toLIR = Trans.compileToLIR . Trans.makeImplicitReturnsExplicit
+
+compiler :: Exp -> IO()
+compiler = putStrLn . gen . luaCG . toLIR
+
 yo = putStrLn . gen . luaCG . LDO
 luaHW = yo $ lbinds ++ lHelloWorld
+main = compiler eHelloWorld
