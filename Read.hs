@@ -48,7 +48,7 @@ lexStr = r "" 1 where
 slex [] = Nothing
 slex (c:cs) = case c of
 	'→' → Just $ (TSEP,cs)
-	'!' → Just $ (TFOREIGN,cs)
+	'$' → Just $ (TFOREIGN,cs)
 	'(' → Just $ (TBEGIN TPAREN,cs)
 	')' → Just $ (TEND TPAREN,cs)
 	'[' → Just $ (TBEGIN TBRAK,cs)
@@ -86,6 +86,7 @@ parseSym s = case s of
 	"#true" → SATOM $ T
 	"#f" → SATOM $ F
 	"#false" → SATOM $ F
+	"#" → SATOM $ STR "#"
 	('#':s) → error $ "Invalid hash pattern: " ++ show ('#':s)
 	s → case reads s of
 		[] → undot s
@@ -99,9 +100,9 @@ parse1 toks = case toks of
 	TEND _ : _ → error "Unexpected sequence terminator"
 	TSEP : _ → error "Unexpected separator"
 	TBEGIN ty : ts → Just $ parseSeq ty ts
-	TFOREIGN : _ → error "TODO"
 	TSYM s : ts → Just (parseSym s, ts)
 	TSTR s : ts → Just (mkstr s, ts)
+	TFOREIGN : ts → fmap f (parse1 ts) where f(e,remain) = (tag "foreign" e,remain)
 
 parseSeq ∷ Ty → [Tok] → (SExp,[Tok])
 parseSeq ty toks = ordered 1 [] toks where

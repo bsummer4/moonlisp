@@ -26,10 +26,19 @@ fixform e = case e of {SYNTAX t→f(ez t); _ → error "wut"} where
 	f ([p,e],[]) = (mkpattern p,t e)
 	f _ = error "wuuuuut"
 
+mkforeign ∷ Exp -> Exp
+mkforeign (VAR v) = GLOBAL v
+mkforeign (SYNTAX s) = case ez s of
+	(VAR "call":f:args,[]) → FCALL (t f) $ map t args
+	(VAR "method":obj:(VAR m):args,[]) → FMETHOD (t obj) m $ map t args
+	([VAR "str",VAR s],[]) → FSTMT s
+mkforeign _ = error "illegal use of $"
+
 transforms ∷ [(String,[Exp] → [(Atom,Exp)] → Exp)]
 transforms = (
 	[ ("str", \[VAR s] [] → ATOM$STR s)
 	, ("lookup", \[a,b] [] → GET (t a) (t b))
+	, ("foreign", \[a] [] → mkforeign a)
 	, ("call", \(f:args) o → CALL (t f) $ DATA $ tmap t $ mk args o)
 	, ("mkdata", \o n → DATA $ tmap t $ mk o n)
 	, ("do", \o [] → DO $ map t o)
@@ -37,6 +46,7 @@ transforms = (
 	, ("match", \(p:forms) [] → MATCH (t p) (map fixform forms))
 	])
 
+t ∷ Exp → Exp
 t e = case e of {SYNTAX a→r(ez a); _→e} where
 	r (VAR v:o,a) = case lookup v transforms of
 		Nothing → error $ "Undefined syntax: " ++ show v

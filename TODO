@@ -13,7 +13,7 @@ TODO Implement ‘match’.
 		Add support to the IR.
 			Compile down to if-else chains for now.
 
-TODO Add support for ‘!’ syntax for foreign symbols/calls/statements/methods.
+TODO Add support for ‘$’ syntax for things like:: $foreign.slot
 TODO Implement ‘def’ :: (def x y) ... → (match y (x ...))
 TODO Implement foreign-syntax and foreign-function.
 TODO Write the standard library for Lua.

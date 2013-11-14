@@ -21,7 +21,7 @@ Table literals:: {slot1 bar a→b}
 Function calls:: [function bar zaz a→b] (this passes {bar zaz a→b} to foo)
 Method calls:: [obj:method arg] (def meth :method) [:method obj arg]
 Table lookups:: a.b [. a "b"] (def getb .b) [.b a]
-Foreign Statements:: $(require io)
+Foreign Statements:: $“require io”
 Reference a global variable:: $window
 Call a foreign method:: $[obj:method a b c]
 Call a foreign function:: $[fn a b c]
