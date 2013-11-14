@@ -10,50 +10,51 @@ Tables are mutable and map from t→t.
 All values are immutable besides tables and foreigns.
 
 ## Basic Syntax
-Reserved characters:: ““”#<>[]{}()":.!→ \t\r\n”
+Reserved characters:: ““”#<>[]{}()":.$→ \t\r\n”
 All-non-reserved characters can be used raw, in identifiers.
-Syntax for atomic data structures:: #true #false str <str> 4.5
+These are also valid identifiers:: ‘#’ ‘$’ ‘.’
+Syntax for primitive data structures:: #true #false #nil str <str> 4.5
 Quoted Strings:: "string" “string”
-Keys in ‘key→val’ forms must be atomic data structures.
-Syntactic forms:: (foo bar a→b)
-Table literals:: {foo bar a→b}
-Function calls:: [foo bar zaz a→b] (this passes {bar zaz a→b} to foo)
+Keys in ‘key→val’ forms must be primitive data structures.
+Syntactic forms:: (syntax bar a→b)
+Table literals:: {slot1 bar a→b}
+Function calls:: [function bar zaz a→b] (this passes {bar zaz a→b} to foo)
+Method calls:: [obj:method arg] (def meth :method) [:method obj arg]
+Table lookups:: a.b [. a "b"] (def getb .b) [.b a]
+Foreign Statements:: $(require io)
+Reference a global variable:: $window
+Call a foreign method:: $[obj:method a b c]
+Call a foreign function:: $[fn a b c]
+Javascript example:: $[$document:write "Hello World!"]
 
 Primitive lisp forms:
 	(λ name exp)
 	(match exp (pattern exp) ...)
 	(do exp ...)
 
-Foreign statements, global variables, function calls, and method calls:
-	Foreign Statements:: !(require io)
-	Reference a global variable:: !window
-	Call a foreign method:: ![obj:method a b c]
-	Call a foreign function:: ![fn a b c]
-	Javascript example:: ![!document:write "Hello World!"]
-
 Patterns are just data-literals mixed with symbols::
 	(match {1 {2} 3} ({1 b c} {b c}))
 		This yields: {{2} 3}
 
 ## Supported Operations
-.        :: {table t} → t         -- Table lookup
-mut      :: {table t t} → t       -- Table mutation
-apply    :: {func table} → t      -- Call function explicitly.
+. lookup :: {table t} → t         -- Table lookup
+! mut    :: {table t t} → t       -- Table mutation
+apply    :: {func t} → t          -- Call function explicitly.
 keys     :: {table} → table       -- Table keys
-%        :: {table} → num         -- Array length
+# len    :: {table} → num         -- Array length
 append   :: {table table} → table -- Array concatenation
-read     :: string → t            -- Read data expression.
-write    :: t → string            -- Write data expression.
+not      :: {bool} → bool
+~        :: {num} → num           -- num * ~1
 +        :: {num num} → num
 -        :: {num num} → num
-*        :: {num num} → num
-/        :: {num num} → num
-%        :: {num num} → num
-^        :: {num num} → num
-=        :: {t t} → bool          -- Equality
-~=       :: {num num} → bool
-<=       :: {num num} → bool
->=       :: {num num} → bool
+* ·      :: {num num} → num
+/ ÷      :: {num num} → num
+% mod    :: {num num} → num
+^ pow    :: {num num} → num
+= eq     :: {t t} → bool          -- Equality
+~= neq   :: {num num} → bool
+<= ≤     :: {num num} → bool
+>= ≥     :: {num num} → bool
 <        :: {num num} → bool
 >        :: {num num} → bool
 ..       :: {str str} → str       -- Concatenation.
