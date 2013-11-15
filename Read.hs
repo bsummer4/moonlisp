@@ -81,6 +81,33 @@ undot sym = f (split (≡'.') sym) where
 	dot exp "" = error $ "Invalid dotted form: " ++ show sym
 	dot exp str = tbltbl[SATOM$STR "lookup", exp, mkstr str]
 
+-- parseIdentifier yeilds the method name, variable, and the slot-lookups
+-- requested by a fancy identifier. Here are some examples:
+	-- ‘a’ → (Just "a", [], Nothing)
+	-- ‘:a’ → (Nothing, [], Just "a")
+	-- ‘.a’ → (Nothing, ["a"], Nothing)
+	-- ‘a.b.c:d’ → (Just "a", ["b","c"], Just "d")
+parseIdentifier ∷ String → (Maybe String,[String],Maybe String)
+parseIdentifier s = (var,dotpath,meth) where
+	(meth,prefix) = getMethod s
+	(var,dotpath) = case split (≡'.') prefix of
+		[] → (Nothing,[])
+		"":dots → (Nothing,dots)
+		v:dots → (Just v,dots)
+
+-- ‘getMethod’ does the following:
+	-- /^([^:]*):([^:.]*)$/ → (Just $2, $1)
+	-- /^([^:]*)$/        → (Nothing, $1)
+	-- _                → ERROR
+getMethod ∷ String → (Maybe String,String)
+getMethod s = case split (≡':') s of
+	[] → (Nothing,"")
+	[s] → (Nothing,s)
+	_:_:_:_ → error "Only one ‘:’ may appear in an identifier."
+	[dotstr,meth] → (Just(check meth),dotstr) where
+		check s = if not $ any (≡'.') s then s else
+			error "‘.’s may not come after ‘:’s in identifiers."
+
 parseSym s = case s of
 	"#t" → SATOM $ T
 	"#true" → SATOM $ T
