@@ -70,9 +70,15 @@ eHelloWorld = DO
 mHelloWorld = unlines
 	[ "$“require 'io'”"
 	, "$“require 'os'”"
-	, "$[(lookup $io “write”) “Hello World!\n”]"
-	, "$[(lookup $os “exit”) 0]"
+	, "$[$io.write “Hello World!\n”]"
+	, "$[$os.exit 0]"
 	]
+
+parse' ∷ String -> [Exp]
+parse' = map fromSexp . sread
+
+parse ∷ String → Exp
+parse = DO . map unsyntax . map fromSexp . sread
 
 toLIR ∷ Exp → LStmt
 toLIR = Trans.compileToLIR . Trans.makeImplicitReturnsExplicit
@@ -82,4 +88,4 @@ compiler = putStrLn . gen . luaCG . toLIR
 
 yo = putStrLn . gen . luaCG . LDO
 luaHW = yo $ lbinds ++ lHelloWorld
-main = compiler $ DO $ map unsyntax $ map fromSexp $ sread $ mHelloWorld
+main = compiler $ parse $ mHelloWorld

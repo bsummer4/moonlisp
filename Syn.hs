@@ -32,7 +32,9 @@ mkforeign (SYNTAX s) = case ez s of
 	(VAR "call":f:args,[]) → FCALL (t f) $ map t args
 	(VAR "method":obj:(VAR m):args,[]) → FMETHOD (t obj) m $ map t args
 	([VAR "str",VAR s],[]) → FSTMT s
-mkforeign _ = error "illegal use of $"
+	([VAR "lookup",k,v],[]) → t $ SYNTAX $ mk [VAR "lookup",mkforeign k,v] []
+	_ → error "Invalid use of $."
+mkforeign _ = error "Invalid use of $"
 
 transforms ∷ [(String,[Exp] → [(Atom,Exp)] → Exp)]
 transforms = (
