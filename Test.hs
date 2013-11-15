@@ -74,11 +74,8 @@ mHelloWorld = unlines
 	, "$[$os.exit 0]"
 	]
 
-parse' ∷ String -> [Exp]
-parse' = map fromSexp . sread
-
 parse ∷ String → Exp
-parse = DO . map unsyntax . map fromSexp . sread
+parse = DO . map unsyntax . sread
 
 toLIR ∷ Exp → LStmt
 toLIR = Trans.compileToLIR . Trans.makeImplicitReturnsExplicit

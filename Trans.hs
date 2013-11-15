@@ -14,7 +14,6 @@ compileToLIR e = mkstmt toplevelNS e
 -- don't, all the tail-call positions are wrapped with return statements.
 makeImplicitReturnsExplicit ∷ Exp → Exp
 makeImplicitReturnsExplicit p = r p where
-	r (SYNTAX _) = error "bad AST designer"
 	r (Λ args body) = Λ args (fix body)
 	r (CALL f a) = CALL (r f) (r a)
 	r (DO es) = DO (map r es)
@@ -112,9 +111,6 @@ compile ns e = case e of
 		(result,ns') = wSym ns ""
 		(param,λns) = wSym ns s
 		(_,_,lexp) = compile λns e
-
-	SYNTAX e → error noMacros where
-		noMacros = "Internal error. All macros must be expanded before compilation."
 
 	SET a b c → case getSeq ns [a,b,c] of
 		(ns2,[ai,bi,ci],code) → (ns2,ci,code++[LSET ai bi ci])

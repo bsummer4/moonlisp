@@ -1,56 +1,51 @@
-module Syn(fromSexp,unsyntax) where
+module Syn(unsyntax) where
 import Prim
 import IR
 import Util
 import Read
 
-unsyntax ∷ Exp → Exp
+unsyntax ∷ SExp → Exp
 unsyntax = t
 
-fromSexp ∷ SExp → Exp
-fromSexp (SATOM(STR s)) = VAR s
-fromSexp (SATOM a) = ATOM a
-fromSexp s@(STABLE es) = r(ez es) where
-	r ([],[]) = error "Invalid syntax: ()"
-	r (o,n) = SYNTAX $ tmap fromSexp $ mk o n
+mkpattern ∷ SExp → Pattern
+mkpattern e = case e of
+	SATOM(STR v) → PSYM v
+	SATOM a → PATOM a
+	STABLE d → PTBL $ tmap mkpattern d
 
-mkpattern ∷ Exp → Pattern
-mkpattern e = case t e of
-	VAR v → PSYM v
-	ATOM a → PATOM a
-	DATA d → PTBL (tmap mkpattern d)
-	_ → error "invalid pattern"
-
-fixform ∷ Exp → (Pattern,Exp)
-fixform e = case e of {SYNTAX t→f(ez t); _ → error "wut"} where
+matchPair ∷ SExp → (Pattern,Exp)
+matchPair e = case e of {STABLE t→f(ez t); _ → error "wut"} where
 	f ([p,e],[]) = (mkpattern p,t e)
 	f _ = error "wuuuuut"
 
-mkforeign ∷ Exp -> Exp
-mkforeign (VAR v) = GLOBAL v
-mkforeign (SYNTAX s) = case ez s of
-	(VAR "call":f:args,[]) → FCALL (t f) $ map t args
-	(VAR "method":obj:(VAR m):args,[]) → FMETHOD (t obj) m $ map t args
-	([VAR "str",VAR s],[]) → FSTMT s
-	([VAR "lookup",k,v],[]) → t $ SYNTAX $ mk [VAR "lookup",mkforeign k,v] []
+mkforeign ∷ SExp → Exp
+mkforeign (SATOM(STR v)) = GLOBAL v
+mkforeign (STABLE s) = case ez s of
+	(SATOM(STR "call"):f:args,[]) → FCALL (t f) $ map t args
+	(SATOM(STR "method"):obj:(SATOM(STR m)):args,[]) → FMETHOD (t obj) m $ map t args
+	([SATOM(STR "str"),SATOM(STR s)],[]) → FSTMT s
+	([SATOM(STR "lookup"),k,v],[]) → GET (mkforeign k) (t v)
 	_ → error "Invalid use of $."
 mkforeign _ = error "Invalid use of $"
 
-transforms ∷ [(String,[Exp] → [(Atom,Exp)] → Exp)]
+transforms ∷ [(String,[SExp] → [(Atom,SExp)] → Exp)]
 transforms = (
-	[ ("str", \[VAR s] [] → ATOM$STR s)
+	[ ("str", \[SATOM(STR s)] [] → ATOM$STR s)
 	, ("lookup", \[a,b] [] → GET (t a) (t b))
 	, ("foreign", \[a] [] → mkforeign a)
 	, ("call", \(f:args) o → CALL (t f) $ DATA $ tmap t $ mk args o)
 	, ("mkdata", \o n → DATA $ tmap t $ mk o n)
 	, ("do", \o [] → DO $ map t o)
-	, ("λ", \[VAR a,body] [] → Λ a (t body))
-	, ("match", \(p:forms) [] → MATCH (t p) (map fixform forms))
+	, ("λ", \[SATOM(STR a),body] [] → Λ a (t body))
+	, ("match", \(p:forms) [] → MATCH (t p) (map matchPair forms))
 	])
 
-t ∷ Exp → Exp
-t e = case e of {SYNTAX a→r(ez a); _→e} where
-	r (VAR v:o,a) = case lookup v transforms of
-		Nothing → error $ "Undefined syntax: " ++ show v
-		Just tr → tr o a
-	r x = error $ "wut is this? " ++ show x
+t ∷ SExp → Exp
+t e = case e of
+	SATOM(STR v) → VAR v
+	SATOM a → ATOM a
+	STABLE a → r $ ez a where
+		r (SATOM(STR v):o,a) = case lookup v transforms of
+			Nothing → error $ "Undefined syntax: " ++ show v
+			Just tr → tr o a
+		r x = error $ "This doesn't make sense: " ++ show x

@@ -16,7 +16,6 @@ data Exp
 	| DATA(Tbl Exp)
 	| SET Exp Exp Exp
 	| GET Exp Exp
-	| SYNTAX (Tbl Exp)
 	| GLOBAL String
 	| FSTMT String
 	| FMETHOD Exp String [Exp]
