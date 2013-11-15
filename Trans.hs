@@ -103,7 +103,7 @@ compile ns e = case e of
 	ATOM a → (ns',i,[LBIND i,LASSIGN i$LATOM a]) where (i,ns')=wSym ns ""
 	CALL f a → call ns f a
 	DO code → foldl mkSeq (ns,0,[]) code
-	RETURN e → (ns',v,code ++ [LRETURN$LVAR v]) where (ns',v,code)=compile ns e
+	RETURN e → (ns',0,code ++ [LRETURN$LVAR v]) where (ns',v,code)=compile ns e
 	MATCH e pats → error "TODO"
 	DATA t → mktable ns t
 	GLOBAL s → (ns',i,[LBIND i, LASSIGN i $ LGLOBAL s]) where (i,ns')=wSym ns ""
