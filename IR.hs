@@ -1,10 +1,16 @@
+{-# LANGUAGE UnicodeSyntax #-}
+
 module IR where
 import Prim
 
 -- Atomic Data Types
-data SExp = SATOM Atom | STABLE(Tbl SExp) deriving(Show,Read,Eq,Ord)
+data SExp = SATOM Atom | STABLE(Tbl SExp) deriving(Read,Eq,Ord)
 data Pattern = PSYM String | PATOM Atom | PTBL(Tbl Pattern)
 	deriving(Show,Read,Eq,Ord)
+
+instance Show SExp where
+	show (SATOM a) = show a
+	show (STABLE a) = show a
 
 data Exp
 	= ATOM Atom

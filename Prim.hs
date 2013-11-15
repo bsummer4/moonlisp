@@ -1,3 +1,5 @@
+{-# LANGUAGE UnicodeSyntax #-}
+
 module Prim
 	( Tbl, Atom(T, F, STR, NUM)
 	, mk, ez, toList, fromList, tcons, tmap
@@ -23,10 +25,14 @@ tmap f (Tbl o u) = Tbl (map f o) (map (\(k,v)→(k,f v)) u)
 instance Show Atom where
 	show T = "#t"
 	show F = "#f"
-	show (STR s) = if any (≡' ') s then "<" ++ s ++ ">" else s
+	show (STR s) = if needsQuotes s then "<" ++ s ++ ">" else s
 	show (NUM n) = show n
+
+needsQuotes "" = True
+needsQuotes(c:cs) =
+	not$and[c `elem` ("_"++['a'..'z']++['A'..'Z']), not$any(≡' ')cs]
 
 instance Show a ⇒ Show(Tbl a) where
 	show (Tbl o u) = "{" ++ mix (map show o ++ map pair u) ++ "}" where
 		pair(k,v) = show k ++ "→" ++ show v
-		mix = concat . intersperse ", "
+		mix = unwords -- concat . intersperse ", "

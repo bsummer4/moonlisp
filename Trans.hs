@@ -1,3 +1,5 @@
+{-# LANGUAGE UnicodeSyntax #-}
+
 module Trans(makeImplicitReturnsExplicit, compileToLIR) where
 import Prim
 import IR

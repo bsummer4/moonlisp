@@ -1,3 +1,5 @@
+{-# LANGUAGE UnicodeSyntax #-}
+
 module Read(sread,sread1,sread1_,swrite) where
 import Prim
 import IR
@@ -67,19 +69,24 @@ slex (c:cs) = case c of
 
 -- Reading
 tbltbl es = STABLE $ mk es []
-tag t e = tbltbl [SATOM$STR$t, e]
-mkstr s = tag "str" (SATOM$STR$s)
+tag t e = tbltbl [mksym t, e]
+mksym s = SATOM(STR s)
+spForm name body = tbltbl $ (mksym name) : body
+mkstr s = spForm "_str" [mksym s]
 mktbl TPAREN es = STABLE es
-mktbl TBRAK es = STABLE $ tcons (SATOM$STR$"call") es
-mktbl TCURLY es = STABLE $ tcons (SATOM$STR$"mkdata") es
-undot sym@('.':more) = SATOM(STR sym)
-undot sym = f (split (≡'.') sym) where
-	f ∷ [String] → SExp
-	f [] = error "wat... undot"
-	f (first:more) = foldl dot (SATOM$STR first) more
-	dot ∷ SExp → String → SExp
-	dot exp "" = error $ "Invalid dotted form: " ++ show sym
-	dot exp str = tbltbl[SATOM$STR "lookup", exp, mkstr str]
+mktbl TBRAK es = STABLE $ tcons (mksym "_call") es
+mktbl TCURLY es = STABLE $ tcons (mksym "_tbl") es
+
+undot ∷ String → SExp
+undot id = case parseIdentifier id of
+	(Just v,dots,Just m) → spForm "_meth" $ map mksym $ (v:dots) ++ [m]
+	(Nothing,dots,Nothing) → spForm "_getter" $ map mksym $ dots
+	(Nothing,dots,Just m) → spForm "_methfn" $ map mksym $ dots++[m]
+	(Just v,dots,Nothing) → foldl (dot id) (mksym v) dots where
+		dot ∷ String → SExp → String → SExp
+		dot sym exp "" = error $ "Invalid dotted form: " ++ show sym
+		dot sym exp str = spForm "_get" [exp, mksym str]
+
 
 -- parseIdentifier yeilds the method name, variable, and the slot-lookups
 -- requested by a fancy identifier. Here are some examples:
@@ -113,7 +120,7 @@ parseSym s = case s of
 	"#true" → SATOM $ T
 	"#f" → SATOM $ F
 	"#false" → SATOM $ F
-	"#" → SATOM $ STR "#"
+	"#" → mksym "#"
 	('#':s) → error $ "Invalid hash pattern: " ++ show ('#':s)
 	s → case reads s of
 		[] → undot s
@@ -129,7 +136,7 @@ parse1 toks = case toks of
 	TBEGIN ty : ts → Just $ parseSeq ty ts
 	TSYM s : ts → Just (parseSym s, ts)
 	TSTR s : ts → Just (mkstr s, ts)
-	TFOREIGN : ts → fmap f (parse1 ts) where f(e,remain) = (tag "foreign" e,remain)
+	TFOREIGN : ts → fmap f (parse1 ts) where f(e,remain)=(tag "_foreign" e,remain)
 
 parseSeq ∷ Ty → [Tok] → (SExp,[Tok])
 parseSeq ty toks = ordered 1 [] toks where

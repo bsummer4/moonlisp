@@ -1,3 +1,5 @@
+{-# LANGUAGE UnicodeSyntax #-}
+
 module Repl(repl) where
 import Util
 import Data.IORef

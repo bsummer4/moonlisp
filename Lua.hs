@@ -1,3 +1,5 @@
+{-# LANGUAGE UnicodeSyntax #-}
+
 module Lua(luaCG) where
 import Prim
 import IR
