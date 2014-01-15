@@ -15,7 +15,7 @@ mk a b = Tbl a (sort b)
 ez (Tbl a b) = (a,b)
 toList (Tbl a b) = zip nums a ++ b
 fromList l = r 1 [] [] (sort l) where
-	r i o u [] = mk (reverse o) u
+	r _ o u [] = mk (reverse o) u
 	r i o u ((k,v):l) = if (NUM i≡k)
 		then r (i+1) (v:o) u l
 		else r i o ((k,v):u) l

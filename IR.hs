@@ -21,6 +21,7 @@ data Exp
 	| CALL Exp Exp
 	| DATA(Tbl Exp)
 	| SET Exp Exp Exp
+	| DEF Pattern Exp
 	| GET Exp Exp
 	| GLOBAL String
 	| FSTMT String

@@ -102,6 +102,8 @@ trace inputS = unlines
 		lua = gen cg
 		sep = take 78 $ repeat '='
 
+fullCvt = compiler∘parse
+
 main = getArgs >>= run where
 	run [] = run ["trace"]
 	run ["trace"] = getContents >>= putStrLn∘trace

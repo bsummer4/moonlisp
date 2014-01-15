@@ -41,6 +41,7 @@ transforms = (
 	, ("λ", \[SATOM(STR a),body] [] → Λ a (t body))
 	, ("fn", \[SATOM(STR a),body] [] → Λ a (t body))
 	, ("match", \(p:forms) [] → MATCH (t p) (map matchPair forms))
+	, ("def", \[p,exp] [] → DEF (mkpattern p) (t exp))
 	])
 
 t ∷ SExp → Exp

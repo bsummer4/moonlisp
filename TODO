@@ -5,6 +5,7 @@ TODO The Code Generation (CExp) stuff is starting to suck.
 	Once we get everything working, this needs to be rewritten to
 		cleanly handle all cases.
 
+TODO The compilation code in ‘Trans.hs’ is far too complicated.
 TODO The REPL chokes on parens in string literals.
 TODO Not all forms are handled in ‘Syn.hs’
 TODO Write more test code.

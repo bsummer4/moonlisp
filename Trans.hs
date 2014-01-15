@@ -18,6 +18,7 @@ makeImplicitReturnsExplicit ∷ Exp → Exp
 makeImplicitReturnsExplicit p = r p where
 	r (Λ args body) = Λ args (fix body)
 	r (CALL f a) = CALL (r f) (r a)
+	r (DEF v e) = DEF v (r e)
 	r (DO es) = DO (map r es)
 	r (DATA forms) = DATA(tmap r forms)
 	r (MATCH e ps) = MATCH (r e) $ map pat ps where pat(p,e)=(p,r e)
@@ -93,6 +94,11 @@ mktable ns t = (nsF,r,codeF) where
 		(ns2,iV,cV) = compile ns1 exp
 		(ns3,iK,cK) = compile ns2 $ ATOM k
 
+defToMatch ∷ [Exp] → [Exp]
+defToMatch [] = []
+defToMatch (DEF p e:code) = [MATCH e [(p,DO code)]]
+defToMatch (x:xs) = x:defToMatch xs
+
 -- TODO The resulting code will not be properly tail-recursive.
 --  The RETURN clause generates code and then uses a var as it's argument.
 --  Instead we need to get the expression that's usually assigned to that var
@@ -103,8 +109,18 @@ compile ns e = case e of
 	VAR s → (ns,findSym ns s,[])
 	ATOM a → (ns',i,[LBIND i,LASSIGN i$LATOM a]) where (i,ns')=wSym ns ""
 	CALL f a → call ns f a
-	DO code → foldl mkSeq (ns,0,[]) code
+	DEF v e → error "This should never happen"
+	DO code → foldl mkSeq (ns,0,[]) $ defToMatch code
 	RETURN e → (ns',0,code ++ [LRETURN$LVAR v]) where (ns',v,code)=compile ns e
+	MATCH e [(PSYM x,body)] → (ns',result,code) where
+		(result,ns') = wSym ns ""             -- Add the result to the namespace.
+		(ns'',ei,ecode) = compile ns' e       -- Compute e
+		(xi,nsForBody) = wSym ns'' x          -- Add the x to the temporary namespace.
+		setupCode = [LBIND xi, LASSIGN xi (LVAR ei)]
+		(_,bi,bcode) = compile nsForBody body -- Compute the body
+		endcode = [LASSIGN result (LVAR bi)]
+		code = [LBIND result, LDO(ecode ++ setupCode ++ bcode ++ endcode)]
+
 	MATCH e pats → error "TODO"
 	DATA t → mktable ns t
 	GLOBAL s → (ns',i,[LBIND i, LASSIGN i $ LGLOBAL s]) where (i,ns')=wSym ns ""
