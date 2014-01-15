@@ -1,0 +1,5 @@
+$“require 'io'”
+$“require 'os'”
+$[$io.write “Hello World!
+”]
+$[$os.exit 0]

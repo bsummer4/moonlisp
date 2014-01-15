@@ -6,21 +6,24 @@ TODO The Code Generation (CExp) stuff is starting to suck.
 		cleanly handle all cases.
 
 TODO The REPL chokes on parens in string literals.
-TOOD Write parsing and syntax-handling for method-call syntax:: [o:m a]
+TODO Not all forms are handled in ‘Syn.hs’
+TODO Write more test code.
+TODO Write code to expressionize LIR.
+	This will give us proper tail calls, and more readable output.
+
 TODO Implement ‘match’.
 	TODO Implement single-variable let-forms in the IR.
 	TODO First implement a simple switch statement on atomic values.
 		Add support to the IR.
 			Compile down to if-else chains for now.
 
-TODO Implement ‘def’ :: (def x y) ... → (match y (x ...))
+TODO Implement ‘def’ ∷ (def x y) ... → (match y (x ...))
 TODO Implement foreign-syntax and foreign-function.
-TODO Write the standard library for Lua.
+TODO Write a prelude library.
 TODO Write the command line interface code.
-TODO Write codegen and the standard library for Python and Javascript.
 TODO Write more and better test cases.
 
 # Add some important features.
-Scheme (r5rs) style macros.
-Implement some nice syntactic-sugar as a macro library.
-Basic optimizations: inlining, proper tail calls
+TODO Add r5rs-style macros.
+TODO Add defmacro-style macros using an embeded lua interpreter.
+TODO Add some nice syntactic-sugar as a macro library.

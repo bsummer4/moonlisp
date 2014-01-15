@@ -3,6 +3,7 @@
 module Prim
 	( Tbl, Atom(T, F, STR, NUM)
 	, mk, ez, toList, fromList, tcons, tmap
+	, module Prelude.Unicode
 	) where
 import Data.List
 import Prelude.Unicode
@@ -35,4 +36,4 @@ needsQuotes(c:cs) =
 instance Show a ⇒ Show(Tbl a) where
 	show (Tbl o u) = "{" ++ mix (map show o ++ map pair u) ++ "}" where
 		pair(k,v) = show k ++ "→" ++ show v
-		mix = unwords -- concat . intersperse ", "
+		mix = unwords

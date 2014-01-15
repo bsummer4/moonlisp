@@ -1,0 +1,65 @@
+==============================================================================
+$“require 'io'”
+$“require 'os'”
+$[$io.write “Hello World!\n”]
+$[$os.exit 0]
+
+==============================================================================
+DO
+	[ FSTMT "require 'io'"
+	, FSTMT "require 'os'"
+	, FCALL (GET (GLOBAL "io") (ATOM write)) [ATOM <Hello World!\n>]
+	, FCALL (GET (GLOBAL "os") (ATOM exit)) [ATOM 0.0]
+	]
+
+==============================================================================
+LDO
+	[ LFOREIGN_DIRECTIVE "require 'io'"
+	, LFOREIGN_DIRECTIVE "require 'os'"
+	, LBIND 31
+	, LASSIGN 31 (LGLOBAL "io")
+	, LBIND 32
+	, LASSIGN 32 (LATOM write)
+	, LBIND 33
+	, LASSIGN 33 (LGET 31 32)
+	, LBIND 34
+	, LASSIGN 34 (LATOM <Hello World!>)
+	, LBIND 35
+	, LASSIGN 35 (LFOREIGN_CALL 33 [34])
+	, LBIND 36
+	, LASSIGN 36 (LGLOBAL "os")
+	, LBIND 37
+	, LASSIGN 37 (LATOM exit)
+	, LBIND 38
+	, LASSIGN 38 (LGET 36 37)
+	, LBIND 39
+	, LASSIGN 39 (LATOM 0.0)
+	, LBIND 40
+	, LASSIGN 40 (LFOREIGN_CALL 38 [39])
+	]
+
+==============================================================================
+do
+ require 'io'
+ require 'os'
+ local v31
+ v31=io
+ local v32
+ v32="write"
+ local v33
+ v33=v31[v32]
+ local v34
+ v34="Hello World!\n"
+ local v35
+ v35=v33(v34)
+ local v36
+ v36=os
+ local v37
+ v37="exit"
+ local v38
+ v38=v36[v37]
+ local v39
+ v39=0
+ local v40
+ v40=v38(v39)
+ end

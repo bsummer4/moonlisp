@@ -4,7 +4,6 @@ module Util where
 import Prim
 import IR
 import Data.List
-import Prelude.Unicode
 
 split isSep l = r [] [] l where
 	r strs chars [] = reverse(reverse chars:strs)

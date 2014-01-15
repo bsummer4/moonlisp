@@ -5,7 +5,6 @@ import Prim
 import IR
 import Util
 import Data.List
-import Prelude.Unicode
 
 sread ∷ String → [SExp]
 sread1 ∷ String → Maybe SExp
@@ -166,12 +165,12 @@ showSym s = if all niceChar s then s else "<" ++ s ++ ">"
 showTbl ∷ Tbl SExp → String
 showTbl es = r $ ez es where
 	r(ordered,named) = "(" ++ (mix $ order ordered ++ name named) ++ ")"
-	name = map pair . sort
+	name = map pair ∘ sort
 	order = map swrite
-	mix = concat . intersperse " "
+	mix = concat ∘ intersperse " "
 	pair(k,v) = swrite(SATOM k) ++ "→" ++ swrite v
 
-writes = unlines . map swrite
+writes = unlines ∘ map swrite
 swrite (SATOM T) = "#t"
 swrite (SATOM F) = "#f"
 swrite (SATOM(STR s)) = showSym s
@@ -181,7 +180,7 @@ swrite (STABLE es) = showTbl es
 stream p s = case p s of {Nothing→[]; Just(t,s')→t:stream p s'}
 tokenize = stream slex
 parse = stream parse1
-sread = parse . tokenize
+sread = parse∘tokenize
 sread1 x = case sread x of {[t]→Just t; _→Nothing}
 sread1_ x = case sread1 x of {Nothing→error "parse error"; Just x→x}
-rpl = interact $ concat . map swrite . sread
+rpl = interact $ concat ∘ map swrite ∘ sread

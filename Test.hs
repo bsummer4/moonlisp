@@ -8,6 +8,7 @@ import Lua
 import Trans
 import Syn
 import Read
+import System.Environment
 
 -- data Atom = T | F | STR String | NUM Double deriving(Eq,Ord)
 -- data Tbl a = Tbl [a] [(Atom,a)] deriving(Eq,Ord)
@@ -77,14 +78,33 @@ mHelloWorld = unlines
 	]
 
 parse ∷ String → Exp
-parse = DO . map unsyntax . sread
+parse = DO ∘ map unsyntax ∘ sread
 
 toLIR ∷ Exp → LStmt
-toLIR = Trans.compileToLIR . Trans.makeImplicitReturnsExplicit
+toLIR = Trans.compileToLIR ∘ Trans.makeImplicitReturnsExplicit
 
 compiler ∷ Exp → IO()
-compiler = putStrLn . gen . luaCG . toLIR
+compiler = putStrLn∘gen∘luaCG∘toLIR
 
-yo = putStrLn . gen . luaCG . LDO
+yo = putStrLn∘gen∘luaCG∘LDO
 luaHW = yo $ lbinds ++ lHelloWorld
-main = compiler $ parse $ mHelloWorld
+
+trace inputS = unlines
+	[ inputS
+	, sep, show ir
+	, sep, show lir
+	, sep, lua
+	] where
+		sexp = sread inputS
+		ir = DO $ map unsyntax sexp
+		lir = toLIR ir
+		cg = luaCG lir
+		lua = gen cg
+		sep = take 78 $ repeat '='
+
+main = getArgs >>= run where
+	run [] = run ["trace"]
+	run ["trace"] = getContents >>= putStrLn∘trace
+	run ["run"] = error "TODO"
+	run ["compile"] = getContents >>= (compiler∘parse)
+	run _ = error "usage: Test [ trace | run | compile ]"

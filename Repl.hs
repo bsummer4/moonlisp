@@ -1,12 +1,12 @@
 {-# LANGUAGE UnicodeSyntax #-}
 
 module Repl(repl) where
+import Prim
 import Util
 import Data.IORef
 import System.IO
 import System.IO.Error
 import Control.Exception
-import Prelude.Unicode
 
 data ChTy = NestCh | UnNestCh | SpaceCh | WordCh
 classify c =

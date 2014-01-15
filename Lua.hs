@@ -7,7 +7,6 @@ import Read
 import Util
 import Data.List
 import Repl
-import Prelude.Unicode
 
 luaCG ∷ LStmt → CExp
 luaCG x = cg x
@@ -40,9 +39,9 @@ instance ToCG LExp where
 	cg (LCALL f a) = jux (atom$var f) $ paren [atom$var a]
 	cg (Lλ a s) = (blockexp("function("++var a++")","end") [cg s])
 	cg (LGLOBAL s) = atom $ validateID s
-	cg (LFOREIGN_CALL f args) = jux (atom$var f) $ paren $ map (atom.var) args
+	cg (LFOREIGN_CALL f args) = jux (atom$var f) $ paren $ map (atom∘var) args
 	cg (LFOREIGN_METHOD obj meth args) =
-		binop (atom$var obj) ":" $ jux (atom meth) $ paren $ map (atom.var) args
+		binop (atom$var obj) ":" $ jux (atom meth) $ paren $ map (atom∘var) args
 	cg (LTABLE forms) = (\x→(CExp Unsafe x)) $ CTUPLE ("{","}") $ map unpair (toList forms) where
 		unpair (a,b) = binop (brak[cg a]) "=" (atom$var b)
 
